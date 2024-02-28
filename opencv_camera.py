@@ -8,6 +8,7 @@ def find_ball(frame):
     edges = cv2.Canny(blurred, 50, 150)
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     print(contours.count)
+
     for contour in contours:
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
@@ -21,48 +22,47 @@ def find_ball(frame):
     return frame
 
 def main():
-    print("cockus")
-    #cap = cv2.VideoCapture(0)
-    #print("vidcap")
-    #if not cap.isOpened():
-        #print("Cannot open camera")
-        #exit()
+    cap = cv2.VideoCapture(1)
+    print("vidcap")
+    if not cap.isOpened():
+        print("Cannot open camera")
+        exit()
 
-    input_image = cv2.imread('WIN_20240221_10_30_19_Pro.jpg')
+    #input_image = cv2.imread('WIN_20240221_10_30_19_Pro.jpg')
 
-    if input_image is None:
-        print("Error: Could not open or read the image")
-        return
+    #if input_image is None:
+        #print("Error: Could not open or read the image")
+        #return
     
-    output_image = find_ball(input_image)
+    #output_image = find_ball(input_image)
 
-    cv2.imshow('Output Image', output_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    #cv2.imshow('Output Image', output_image)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
 
 
-    #while True:
-        #print("in while")
-        #ret, frame = cap.read()
-        #frame_width = 640
-        #frame_height = 480
-        #cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
-        #cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
+    while True:
+        print("in while")
+        ret, frame = cap.read()
+        frame_width = 640
+        frame_height = 480
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
 
-        #if not ret:
-            #print("Can't receive frame (stream end?). Exiting ...")
-            #break
-
+        if not ret:
+            print("Can't receive frame (stream end?). Exiting ...")
+            break
+                
         #frame = find_ball(frame)
         
         # Display the resulting frame
-        #cv2.imshow('frame', frame)
-        #if cv2.waitKey(1) == ord('q'):
-            #break
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) == ord('q'):
+            break
             
 
-    #cap.release()
-    #cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
