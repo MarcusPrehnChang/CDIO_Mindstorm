@@ -12,6 +12,8 @@ def find_ball(frame):
     for contour in contours:
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
+        if perimeter == 0:
+            break
         circularity = 4 * np.pi * area / (perimeter * perimeter)
 
         if circularity > 0.5:
@@ -22,7 +24,10 @@ def find_ball(frame):
     return frame
 
 def main():
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M','J','P','G'))
+
+
     print("vidcap")
     if not cap.isOpened():
         print("Cannot open camera")
@@ -44,16 +49,13 @@ def main():
     while True:
         print("in while")
         ret, frame = cap.read()
-        frame_width = 640
-        frame_height = 480
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
+
 
         if not ret:
             print("Can't receive frame (stream end?). Exiting ...")
             break
                 
-        #frame = find_ball(frame)
+        frame = find_ball(frame)
         
         # Display the resulting frame
         cv2.imshow('frame', frame)
