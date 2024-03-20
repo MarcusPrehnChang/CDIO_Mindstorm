@@ -1,8 +1,12 @@
 import cv2
 import numpy as np
+import pandas as pd
 
+index = ["color", "color_name", "hex", "R", "G", "B"]
+csv = pd.read_csv('data/colors.csv', names=index, header=None)
+valid_colors = np.array(['Anti-Flash White', 'Antique White', 'Floral White', 'Ghost White', 'Navajo White', 'White', 'White Smoke', 'Platinum', 'Gainsboro'])
 
-def find_ball(frame, min_radius=20, max_radius=60):
+def find_ball(frame, min_radius=10, max_radius=200):
     print("find ball")
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -19,14 +23,51 @@ def find_ball(frame, min_radius=20, max_radius=60):
 
         if circularity > 0.5:
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
+            r,b,g = get_pixel_color(frame, int(x), int(y))
+            color_name = get_color_name(r,b,g)
             center = (int(x), int(y))
             radius = int(radius)
-            if min_radius < radius < max_radius:
+            print('Color Name: ' + color_name)
+            print('Valid color? ' + color_name in valid_colors)
+            #and color_name in valid_colors
+            if min_radius < radius < max_radius and color_name in valid_colors:
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
     return frame
 
 
+def get_pixel_color(image, x, y):
+    b, g, r = image[y, x]
+    return r, b, g
+
+
+def get_color_name(R, G, B):
+    minimum = 10000
+    for i in range(len(csv)):
+        d = abs(R - int(csv.loc[i, "R"])) + abs(G - int(csv.loc[i, "G"])) + abs(B - int(csv.loc[i, "B"]))
+        if d <= minimum:
+            minimum = d
+            cname = csv.loc[i, "color_name"]
+    return cname
+
+
 def main():
+    # Image Capture
+    #input_image = cv2.resize(cv2.imread('images/board.png'), (1000,1000))
+
+    input_image = cv2.imread('images/whiteball.jpg')
+
+    if input_image is None:
+        print("Error: Could not open or read the image")
+        return
+
+    output_image = find_ball(input_image)
+
+    cv2.imshow('Output Image', output_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    # Video Capture
+    """
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
 
@@ -34,18 +75,6 @@ def main():
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
-
-    # input_image = cv2.imread('WIN_20240221_10_30_19_Pro.jpg')
-
-    # if input_image is None:
-    # print("Error: Could not open or read the image")
-    # return
-
-    # output_image = find_ball(input_image)
-
-    # cv2.imshow('Output Image', output_image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
 
     while True:
         print("in while")
@@ -64,6 +93,7 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+    """
 
 
 if __name__ == "__main__":
