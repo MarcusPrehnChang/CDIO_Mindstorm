@@ -4,7 +4,7 @@ import pandas as pd
 
 index = ["color", "color_name", "hex", "R", "G", "B"]
 csv = pd.read_csv('data/colors.csv', names=index, header=None)
-valid_colors = np.array(['Anti-Flash White', 'Antique White', 'Floral White', 'Ghost White', 'Navajo White', 'White', 'White Smoke', 'Platinum', 'Gainsboro'])
+
 
 def find_ball(frame, min_radius=10, max_radius=200):
     print("find ball")
@@ -23,14 +23,11 @@ def find_ball(frame, min_radius=10, max_radius=200):
 
         if circularity > 0.5:
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
-            r,b,g = get_pixel_color(frame, int(x), int(y))
-            color_name = get_color_name(r,b,g)
+            r, b, g = get_pixel_color(frame, int(x), int(y))
             center = (int(x), int(y))
             radius = int(radius)
-            print('Color Name: ' + color_name)
-            print('Valid color? ' + color_name in valid_colors)
-            #and color_name in valid_colors
-            if min_radius < radius < max_radius and color_name in valid_colors:
+
+            if min_radius < radius < max_radius and isValidColor(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
     return frame
 
@@ -38,6 +35,10 @@ def find_ball(frame, min_radius=10, max_radius=200):
 def get_pixel_color(image, x, y):
     b, g, r = image[y, x]
     return r, b, g
+
+
+def isValidColor(R, G, B):
+    return R > 200 and G > 200 and B > 200
 
 
 def get_color_name(R, G, B):
@@ -49,10 +50,9 @@ def get_color_name(R, G, B):
             cname = csv.loc[i, "color_name"]
     return cname
 
-
 def main():
     # Image Capture
-    #input_image = cv2.resize(cv2.imread('images/board.png'), (1000,1000))
+    # input_image = cv2.resize(cv2.imread('images/board.png'), (1000,1000))
 
     input_image = cv2.imread('images/whiteball.jpg')
 
