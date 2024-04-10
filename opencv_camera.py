@@ -4,6 +4,7 @@ import pandas as pd
 
 index = ["color", "color_name", "hex", "R", "G", "B"]
 
+
 def find_ball(frame, min_radius=10, max_radius=200):
     print("find ball")
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -25,8 +26,16 @@ def find_ball(frame, min_radius=10, max_radius=200):
             center = (int(x), int(y))
             radius = int(radius)
 
-            if min_radius < radius < max_radius and isValidColor(r, b, g):
+            if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
+        else:
+            lower_red = np.array([175, 0, 0])
+            upper_red = np.array([255, 20, 20])
+
+            mask = cv2.inRange(frame, lower_red, upper_red)
+
+            frame = mask
+
     return frame
 
 
@@ -35,24 +44,35 @@ def get_pixel_color(image, x, y):
     return r, b, g
 
 
-def isValidColor(R, G, B):
+def isValidColorBall(R, G, B):
     return R > 200 and G > 150 and B > 100
+
+
+def isValidColorWall(R, G, B):
+    return R < 190 and G > 10 and B > 25
+
 
 def main():
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/board.png'), (1000,1000))
+    input_image = cv2.resize(cv2.imread('images/board.png'), (1000, 1000))
 
-    #input_image = cv2.imread('images/whiteball.jpg')
+    # input_image = cv2.imread('images/whiteball.jpg')
 
-    #input_image = cv2.resize(cv2.imread('images/gulvbillede.jpg'), (600, 750))
+    # input_image = cv2.resize(cv2.imread('images/gulvbillede.jpg'), (600, 750))
 
     if input_image is None:
         print("Error: Could not open or read the image")
         return
 
-    output_image = find_ball(input_image)
+    #output_image = find_ball(input_image)
+    hsv = cv2.cvtColor(input_image, cv2.COLOR_BGR2HSV)
 
-    cv2.imshow('Output Image', output_image)
+    lower_red = np.array([0, 100, 100])
+    upper_red = np.array([10, 255, 255])
+
+    mask = cv2.inRange(hsv, lower_red, upper_red)
+
+    cv2.imshow('Output Image', mask)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -85,6 +105,7 @@ def main():
     cap.release()
     cv2.destroyAllWindows()
     """
+
 
 if __name__ == "__main__":
     main()
