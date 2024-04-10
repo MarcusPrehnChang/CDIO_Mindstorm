@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 
 index = ["color", "color_name", "hex", "R", "G", "B"]
-csv = pd.read_csv('data/colors.csv', names=index, header=None)
-
 
 def find_ball(frame, min_radius=10, max_radius=200):
     print("find ball")
@@ -21,7 +19,7 @@ def find_ball(frame, min_radius=10, max_radius=200):
             break
         circularity = 4 * np.pi * area / (perimeter * perimeter)
 
-        if circularity > 0.5:
+        if circularity > 0.7:
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
             center = (int(x), int(y))
@@ -38,23 +36,15 @@ def get_pixel_color(image, x, y):
 
 
 def isValidColor(R, G, B):
-    return R > 200 and G > 200 and B > 200
-
-
-def get_color_name(R, G, B):
-    minimum = 10000
-    for i in range(len(csv)):
-        d = abs(R - int(csv.loc[i, "R"])) + abs(G - int(csv.loc[i, "G"])) + abs(B - int(csv.loc[i, "B"]))
-        if d <= minimum:
-            minimum = d
-            cname = csv.loc[i, "color_name"]
-    return cname
+    return R > 200 and G > 150 and B > 100
 
 def main():
     # Image Capture
-    # input_image = cv2.resize(cv2.imread('images/board.png'), (1000,1000))
+    input_image = cv2.resize(cv2.imread('images/board.png'), (1000,1000))
 
-    input_image = cv2.imread('images/whiteball.jpg')
+    #input_image = cv2.imread('images/whiteball.jpg')
+
+    #input_image = cv2.resize(cv2.imread('images/gulvbillede.jpg'), (600, 750))
 
     if input_image is None:
         print("Error: Could not open or read the image")
@@ -67,6 +57,7 @@ def main():
     cv2.destroyAllWindows()
 
     # Video Capture
+
     """
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
@@ -94,7 +85,6 @@ def main():
     cap.release()
     cv2.destroyAllWindows()
     """
-
 
 if __name__ == "__main__":
     main()
