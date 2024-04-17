@@ -5,7 +5,7 @@ import numpy as np
 index = ["color", "color_name", "hex", "R", "G", "B"]
 
 
-def find_ball(frame, min_radius=10, max_radius=200):
+def find_ball(frame, min_radius=5, max_radius=200):
     print("find ball")
     balls = []
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -14,16 +14,36 @@ def find_ball(frame, min_radius=10, max_radius=200):
     cv2.imshow('Output Image', edges)
     cv2.waitKey(0)
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    print(contours.count)
 
-    for contour in contours:
+
+    
+    cv2.drawContours(frame, contours, -1, (255, 0, 0), 2)
+
+    for i, contour in enumerate(contours):
+        M = cv2.moments(contour)
+        if M["m00"] != 0:
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
+            cv2.putText(frame, str(i+1), (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        print("Proccessing contour ", i+1, "of", len(contours))
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
+        print("Area:", area)  # Print area for debugging
+        print("Perimeter:", perimeter)
         if perimeter == 0:
-            break
+            continue
         circularity = 4 * np.pi * area / (perimeter * perimeter)
+        M = cv2.moments(contour)
+        if M["m00"] != 0:
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
+            cv2.putText(frame, f"({circularity:.2f})", (cX, cY-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        print(circularity)
 
-        if circularity > 0.7:
+        #calculate all of the radiuses. then eliminate anything that goes above by a certain margin to remove the goose egg scenario.
+
+        if circularity > 0.8:
+            print("ball found")
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
             center = (int(x), int(y))
@@ -72,7 +92,7 @@ def isValidColorWall(R, G, B):
 def main():
     balls = []
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/board.png'), (1000, 1000))
+    input_image = cv2.resize(cv2.imread('images/wallplusballs.jpg'), (1000, 1000))
 
     # input_image = cv2.imread('images/whiteball.jpg')
 
