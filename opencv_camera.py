@@ -1,15 +1,18 @@
 import cv2
 import numpy as np
-import pandas as pd
+#import pandas as pd
 
 index = ["color", "color_name", "hex", "R", "G", "B"]
 
 
 def find_ball(frame, min_radius=10, max_radius=200):
     print("find ball")
+    balls = []
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
+    cv2.imshow('Output Image', edges)
+    cv2.waitKey(0)
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     print(contours.count)
 
@@ -27,16 +30,29 @@ def find_ball(frame, min_radius=10, max_radius=200):
             radius = int(radius)
 
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
+                print("drawing circle")
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
-        else:
-            lower_red = np.array([175, 0, 0])
-            upper_red = np.array([255, 20, 20])
+                balls.append((center, radius))    
 
-            mask = cv2.inRange(frame, lower_red, upper_red)
 
-            frame = mask
+    return frame, balls
 
-    return frame
+def find_outer_walls(frame):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    lower_red = np.array([0, 100, 100])
+    upper_red = np.array([10, 255, 255])
+
+    mask = cv2.inRange(hsv, lower_red, upper_red)
+
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    max_contour = max(contours, key=cv2.contourArea)
+
+
+    contour_image = cv2.drawContours(frame.copy(), [max_contour], -1, (0, 255, 0), 2)
+    x, y, w, h = cv2.boundingRect(max_contour)
+
+    return contour_image, (x, y, w ,h)
 
 
 def get_pixel_color(image, x, y):
@@ -51,8 +67,10 @@ def isValidColorBall(R, G, B):
 def isValidColorWall(R, G, B):
     return R < 190 and G > 10 and B > 25
 
+#def create_sparse_map(bounding_box_size, balls):
 
 def main():
+    balls = []
     # Image Capture
     input_image = cv2.resize(cv2.imread('images/board.png'), (1000, 1000))
 
@@ -64,15 +82,14 @@ def main():
         print("Error: Could not open or read the image")
         return
 
-    #output_image = find_ball(input_image)
-    hsv = cv2.cvtColor(input_image, cv2.COLOR_BGR2HSV)
 
-    lower_red = np.array([0, 100, 100])
-    upper_red = np.array([10, 255, 255])
+    mask, box_dimensions = find_outer_walls(input_image)
 
-    mask = cv2.inRange(hsv, lower_red, upper_red)
+    output_image, balls = find_ball(mask)
 
-    cv2.imshow('Output Image', mask)
+
+
+    cv2.imshow('Output Image', output_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
