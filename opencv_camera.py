@@ -1,68 +1,110 @@
 import cv2
 import numpy as np
+import pandas as pd
 
-def find_ball(frame):
+index = ["color", "color_name", "hex", "R", "G", "B"]
+
+
+def find_ball(frame, min_radius=10, max_radius=200):
     print("find ball")
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5,5), 0)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     print(contours.count)
+
     for contour in contours:
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
+        if perimeter == 0:
+            break
         circularity = 4 * np.pi * area / (perimeter * perimeter)
 
-        if circularity > 0.5:
-            ((x,y), radius) = cv2.minEnclosingCircle(contour)
+        if circularity > 0.7:
+            ((x, y), radius) = cv2.minEnclosingCircle(contour)
+            r, b, g = get_pixel_color(frame, int(x), int(y))
             center = (int(x), int(y))
             radius = int(radius)
-            cv2.circle(frame, center, radius, (0, 255, 255), 2)
+
+            if min_radius < radius < max_radius and isValidColorBall(r, b, g):
+                cv2.circle(frame, center, radius, (0, 255, 255), 2)
+        else:
+            lower_red = np.array([175, 0, 0])
+            upper_red = np.array([255, 20, 20])
+
+            mask = cv2.inRange(frame, lower_red, upper_red)
+
+            frame = mask
+
     return frame
 
-def main():
-    print("cockus")
-    #cap = cv2.VideoCapture(0)
-    #print("vidcap")
-    #if not cap.isOpened():
-        #print("Cannot open camera")
-        #exit()
 
-    input_image = cv2.imread('WIN_20240221_10_30_19_Pro.jpg')
+def get_pixel_color(image, x, y):
+    b, g, r = image[y, x]
+    return r, b, g
+
+
+def isValidColorBall(R, G, B):
+    return R > 200 and G > 150 and B > 100
+
+
+def isValidColorWall(R, G, B):
+    return R < 190 and G > 10 and B > 25
+
+
+def main():
+    # Image Capture
+    input_image = cv2.resize(cv2.imread('images/board.png'), (1000, 1000))
+
+    # input_image = cv2.imread('images/whiteball.jpg')
+
+    # input_image = cv2.resize(cv2.imread('images/gulvbillede.jpg'), (600, 750))
 
     if input_image is None:
         print("Error: Could not open or read the image")
         return
-    
-    output_image = find_ball(input_image)
 
-    cv2.imshow('Output Image', output_image)
+    #output_image = find_ball(input_image)
+    hsv = cv2.cvtColor(input_image, cv2.COLOR_BGR2HSV)
+
+    lower_red = np.array([0, 100, 100])
+    upper_red = np.array([10, 255, 255])
+
+    mask = cv2.inRange(hsv, lower_red, upper_red)
+
+    cv2.imshow('Output Image', mask)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+    # Video Capture
 
-    #while True:
-        #print("in while")
-        #ret, frame = cap.read()
-        #frame_width = 640
-        #frame_height = 480
-        #cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
-        #cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
+    """
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
 
-        #if not ret:
-            #print("Can't receive frame (stream end?). Exiting ...")
-            #break
+    print("vidcap")
+    if not cap.isOpened():
+        print("Cannot open camera")
+        exit()
 
-        #frame = find_ball(frame)
-        
+    while True:
+        print("in while")
+        ret, frame = cap.read()
+
+        if not ret:
+            print("Can't receive frame (stream end?). Exiting ...")
+            break
+
+        frame = find_ball(frame)
+
         # Display the resulting frame
-        #cv2.imshow('frame', frame)
-        #if cv2.waitKey(1) == ord('q'):
-            #break
-            
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) == ord('q'):
+            break
 
-    #cap.release()
-    #cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
+    """
 
 
 if __name__ == "__main__":
