@@ -3,9 +3,11 @@ import numpy as np
 #import pandas as pd
 
 index = ["color", "color_name", "hex", "R", "G", "B"]
+columns = 50
+rows = 50
+object_array = [[0 for _ in range(rows)]for _ in range(columns)]
 
-
-def find_ball(frame, min_radius=5, max_radius=200):
+def find_ball(frame, min_radius=5, max_radius=20):
     print("find ball")
     balls = []
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -57,6 +59,31 @@ def find_ball(frame, min_radius=5, max_radius=200):
 
     return frame, balls
 
+def map_objects(balls, box_dimensions, output_image):
+    x, y, w,h = box_dimensions
+    cell_width = w // rows
+    cell_height = h // columns
+
+    arr = [[0]*columns]*rows
+
+    for i in range(1,rows):
+        cv2.line(output_image, (x+cell_height * i, y), (x+cell_height*i,y+h), (255, 0, 0))
+    for i in range(1,columns):
+        cv2.line(output_image, (x, y+cell_width*i), (x+w,y+cell_width*i), (255, 0, 0))
+
+    counter = 0
+
+    for ball in balls:
+        counter = counter + 1
+        center, _ = ball
+
+        cell_x = (center[0] - x) // cell_width
+        cell_y = (center[1] - y) // cell_height
+
+        arr[cell_x][cell_y] = 2
+    print(counter)
+    return arr, output_image
+
 def find_outer_walls(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -74,6 +101,8 @@ def find_outer_walls(frame):
 
     return contour_image, (x, y, w ,h)
 
+def get_array():
+    return object_array
 
 def get_pixel_color(image, x, y):
     b, g, r = image[y, x]
@@ -107,14 +136,25 @@ def main():
 
     output_image, balls = find_ball(mask)
 
+    object_array, output_image = map_objects(balls, box_dimensions, output_image)
+
 
 
     cv2.imshow('Output Image', output_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+    print(len(balls))
     # Video Capture
-
+    some_value = 0
+    amount_correct = 0
+    for i in range (0,columns):
+        for j in range (0,rows):
+            if object_array[i][j] == 2:
+                amount_correct += 1
+                some_value += 1
+    print(amount_correct)
+    print(some_value)
     """
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
