@@ -6,6 +6,8 @@ index = ["color", "color_name", "hex", "R", "G", "B"]
 columns = 50
 rows = 50
 arr = [[0]*columns for _ in range(rows)]
+walls = []
+number_of_minimum_balls = 11
 
 def find_ball(frame, min_radius=5, max_radius=20):
     print("find ball")
@@ -75,6 +77,9 @@ def map_objects(balls, highprio, box_dimensions, output_image):
         cv2.line(output_image, (x, y+cell_width*i), (x+w,y+cell_width*i), (255, 0, 0))
 
     counter = 0
+    for wall in walls:
+        
+
 
     for ball in balls:
         counter = counter + 1
@@ -107,11 +112,18 @@ def find_outer_walls(frame):
 
     mask = cv2.inRange(hsv, lower_red, upper_red)
 
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
     max_contour = max(contours, key=cv2.contourArea)
 
+    print(len(contours))
+    for contour in contours:
+        cv2.drawContours(frame, [contour], -1, (0, 255, 0), 2)
+        cv2.boundingRect(contour)
+        if contour is not max_contour:
+            walls.append(contour)
 
-    contour_image = cv2.drawContours(frame.copy(), [max_contour], -1, (0, 255, 0), 2)
+    contour_image = cv2.drawContours(frame.copy(), [max_contour], -1, (255, 255, 0), 2)
     x, y, w, h = cv2.boundingRect(max_contour)
 
     return contour_image, (x, y, w ,h)
@@ -151,23 +163,15 @@ def main():
 
 
     mask, box_dimensions = find_outer_walls(input_image)
+    
+    #output_image, balls, highprio = find_ball(mask)
 
-    output_image, balls, highprio = find_ball(mask)
+    #output_image = map_objects(balls, highprio, box_dimensions, output_image)
 
-    output_image = map_objects(balls, highprio, box_dimensions, output_image)
-
-    for i in range(rows):
-        for j in range(columns):
-            if arr[i][j] == 2:
-                print(str(i), str(j), str(arr[i][j]))
-            elif arr[i][j] == 3:
-                print(str(i), str(j), str(arr[i][j]))
-
-    cv2.imshow('Output Image', output_image)
+    cv2.imshow('Output Image', mask)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    print(len(balls))
     # Video Capture
     some_value = 0
     amount_correct = 0
