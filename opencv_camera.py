@@ -10,6 +10,7 @@ arr = [[0]*columns for _ in range(rows)]
 def find_ball(frame, min_radius=5, max_radius=20):
     print("find ball")
     balls = []
+    highprio = []
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
@@ -50,16 +51,20 @@ def find_ball(frame, min_radius=5, max_radius=20):
             r, b, g = get_pixel_color(frame, int(x), int(y))
             center = (int(x), int(y))
             radius = int(radius)
-
+            print(r,b,g)
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 print("drawing circle")
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
-                balls.append((center, radius))    
+                balls.append((center, radius))
+            elif min_radius < radius < max_radius and isHighPrioBall(r, b, g):   
+                print("high prio found")
+                cv2.circle(frame, center, radius, (0,0,0), 2)
+                highprio.append((center, radius))  
+    print("length of high prio" + str(len(highprio)))  
 
+    return frame, balls, highprio
 
-    return frame, balls
-
-def map_objects(balls, box_dimensions, output_image):
+def map_objects(balls, highprio, box_dimensions, output_image):
     x, y, w,h = box_dimensions
     cell_width = w // rows
     cell_height = h // columns
@@ -79,6 +84,16 @@ def map_objects(balls, box_dimensions, output_image):
         cell_y = (center[1] - y) // cell_height
         if 0 <= cell_x < columns and 0 <= cell_y < rows:
             arr[cell_x][cell_y] = 2
+        else:
+            print("Warning: Out of bounds for cell:", cell_x, cell_y)
+    for ball in highprio:
+        counter = counter + 1
+        center, _ = ball
+
+        cell_x = (center[0] - x) // cell_width
+        cell_y = (center[1] - y) // cell_height
+        if 0 <= cell_x < columns and 0 <= cell_y < rows:
+            arr[cell_x][cell_y] = 3
         else:
             print("Warning: Out of bounds for cell:", cell_x, cell_y)
    
@@ -112,6 +127,9 @@ def get_pixel_color(image, x, y):
 def isValidColorBall(R, G, B):
     return R > 200 and G > 150 and B > 100
 
+def isHighPrioBall(R, G, B):
+    return R > 200 and G < 100 and B >150
+
 
 def isValidColorWall(R, G, B):
     return R < 190 and G > 10 and B > 25
@@ -134,14 +152,16 @@ def main():
 
     mask, box_dimensions = find_outer_walls(input_image)
 
-    output_image, balls = find_ball(mask)
+    output_image, balls, highprio = find_ball(mask)
 
-    output_image = map_objects(balls, box_dimensions, output_image)
+    output_image = map_objects(balls, highprio, box_dimensions, output_image)
 
     for i in range(rows):
         for j in range(columns):
             if arr[i][j] == 2:
-                print(str(i), str(j))
+                print(str(i), str(j), str(arr[i][j]))
+            elif arr[i][j] == 3:
+                print(str(i), str(j), str(arr[i][j]))
 
     cv2.imshow('Output Image', output_image)
     cv2.waitKey(0)
