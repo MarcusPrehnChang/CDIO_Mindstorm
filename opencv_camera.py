@@ -10,60 +10,31 @@ walls = []
 number_of_minimum_balls = 11
 
 def find_ball(frame, min_radius=5, max_radius=20):
-    print("find ball")
     balls = []
     highprio = []
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
-    cv2.imshow('Output Image', edges)
-    cv2.waitKey(0)
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-
-    
-    cv2.drawContours(frame, contours, -1, (255, 0, 0), 2)
-
     for i, contour in enumerate(contours):
-        M = cv2.moments(contour)
-        if M["m00"] != 0:
-            cX = int(M["m10"] / M["m00"])
-            cY = int(M["m01"] / M["m00"])
-            cv2.putText(frame, str(i+1), (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        print("Proccessing contour ", i+1, "of", len(contours))
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
-        print("Area:", area)  # Print area for debugging
-        print("Perimeter:", perimeter)
         if perimeter == 0:
             continue
         circularity = 4 * np.pi * area / (perimeter * perimeter)
-        M = cv2.moments(contour)
-        if M["m00"] != 0:
-            cX = int(M["m10"] / M["m00"])
-            cY = int(M["m01"] / M["m00"])
-            cv2.putText(frame, f"({circularity:.2f})", (cX, cY-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        print(circularity)
-
-        #calculate all of the radiuses. then eliminate anything that goes above by a certain margin to remove the goose egg scenario.
 
         if circularity > 0.8:
-            print("ball found")
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
             center = (int(x), int(y))
             radius = int(radius)
-            print(r,b,g)
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
-                print("drawing circle")
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
                 balls.append((center, radius))
             elif min_radius < radius < max_radius and isHighPrioBall(r, b, g):   
-                print("high prio found")
                 cv2.circle(frame, center, radius, (0,0,0), 2)
-                highprio.append((center, radius))  
-    print("length of high prio" + str(len(highprio)))  
-
+                highprio.append((center, radius))   
     return frame, balls, highprio
 
 def map_objects(balls, highprio, box_dimensions, output_image):
@@ -77,9 +48,6 @@ def map_objects(balls, highprio, box_dimensions, output_image):
         cv2.line(output_image, (x, y+cell_width*i), (x+w,y+cell_width*i), (255, 0, 0))
 
     counter = 0
-    for wall in walls:
-        
-
 
     for ball in balls:
         counter = counter + 1
@@ -116,7 +84,6 @@ def find_outer_walls(frame):
 
     max_contour = max(contours, key=cv2.contourArea)
 
-    print(len(contours))
     for contour in contours:
         cv2.drawContours(frame, [contour], -1, (0, 255, 0), 2)
         cv2.boundingRect(contour)
