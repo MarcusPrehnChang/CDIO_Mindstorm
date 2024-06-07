@@ -4,3 +4,10 @@ A project, pertaining to the problem of identifying golf balls, operating a robo
 # Tech stack
 * OpenCV 
 * Lego Mindstorm
+
+# Setting up the project
+After opening your folder, ensure you have the necessary packages:
+pip install opencv-python numpy
+Setup your environment, either custom, or setting it up explicitly in VSC:
+Ctrl+Shift+P
+Python: Select Interpreter - select your interpreter.
