@@ -1,3 +1,5 @@
+import math
+
 import cv2
 import numpy as np
 
@@ -115,15 +117,34 @@ def find_triangle(frame):
     print("Number of contours detected: ", len(contours))
 
     for i in contours:
-        approx = cv2.approxPolyDP(i, 0.01*cv2.arcLength(i, True), True)
+        approx = cv2.approxPolyDP(i, 0.01 * cv2.arcLength(i, True), True)
         if len(approx) == 3:
-            frame = cv2.drawContours(frame, [i], -1, (0,0,0), 3)
+            frame = cv2.drawContours(frame, [i], -1, (0, 0, 0), 3)
             for n in approx:
                 print(n[0])
                 points.append(n[0])
 
     return frame, points
 
+
+def get_orientation(points):
+    # Init the points to x and y
+    x1, y1 = points[0]
+    x2, y2 = points[1]
+    x3, y3 = points[2]
+
+    # Calculate the distance between points using the Afstandsformlen
+    length1 = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+    length2 = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
+    length3 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
+
+    # Determine which point is C
+    if math.isclose(length1, length2, rel_tol=1):
+        print(points[0])
+    elif math.isclose(length3, length2, rel_tol=1):
+        print(points[2])
+    elif math.isclose(length1, length2, rel_tol=1):
+        print(points[1])
 
 def get_array():
     return arr
@@ -158,6 +179,8 @@ def main():
     newFrame, points = find_triangle(input2)
 
     cv2.imshow('Example', newFrame)
+
+    get_orientation(points)
 
     print(points)
 
