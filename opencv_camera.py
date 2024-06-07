@@ -14,7 +14,7 @@ number_of_minimum_balls = 11
 def detect_Objects(frame):
     find_ball(frame)
     box_dimensions = find_outer_walls(frame)
-
+    return frame
 
 
 def find_ball(frame, min_radius=5, max_radius=20):
@@ -133,15 +133,10 @@ def main():
     if input_image is None:
         print("Error: Could not open or read the image")
         return
+    frame = detect_Objects(input_image)
 
 
-    mask, box_dimensions = find_outer_walls(input_image)
-    
-    #output_image, balls, highprio = find_ball(mask)
-
-    #output_image = map_objects(balls, highprio, box_dimensions, output_image)
-
-    cv2.imshow('Output Image', mask)
+    cv2.imshow('Output Image', frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
