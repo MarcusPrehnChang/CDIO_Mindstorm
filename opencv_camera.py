@@ -9,11 +9,13 @@ arr = [[0]*columns for _ in range(rows)]
 walls = []
 balls = []
 highprio = []
+gooseEgg = []
 number_of_minimum_balls = 11
 
 def detect_Objects(frame):
     find_ball(frame)
-    box_dimensions = find_outer_walls(frame)
+    bounding_box = find_walls(frame)
+    frame = map_objects(bounding_box, frame)
     return frame
 
 
@@ -37,67 +39,74 @@ def find_ball(frame, min_radius=5, max_radius=20):
             radius = int(radius)
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
-                balls.append((center, radius))
+                balls.append(contour)
             elif min_radius < radius < max_radius and isHighPrioBall(r, b, g):   
                 cv2.circle(frame, center, radius, (0,0,0), 2)
-                highprio.append((center, radius))   
+                highprio.append(contour)
+            elif radius > max_radius:
+                cv2.circle(frame, center, radius, (255,0,0), 2)
+                gooseEgg.append(contour)
+
+                
     return balls, highprio
 
-def map_objects(balls, highprio, box_dimensions, output_image):
-    x, y, w,h = box_dimensions
+def map_objects(box_dimensions, output_image):
+    x, y, w, h = box_dimensions
     cell_width = w // rows
     cell_height = h // columns
 
-    for i in range(1,rows):
-        cv2.line(output_image, (x+cell_height * i, y), (x+cell_height*i,y+h), (255, 0, 0))
-    for i in range(1,columns):
-        cv2.line(output_image, (x, y+cell_width*i), (x+w,y+cell_width*i), (255, 0, 0))
-
     counter = 0
-
-
-
+    mask = np.zeros((h,w), dtype=np.uint8)
+    for wall in walls:
+        cv2.drawContours(mask, [wall], -1, 255, thickness=cv2.FILLED, offset=(-x, -y))
     for ball in balls:
-        counter = counter + 1
-        center, _ = ball
-
-        cell_x = (center[0] - x) // cell_width
-        cell_y = (center[1] - y) // cell_height
-        if 0 <= cell_x < columns and 0 <= cell_y < rows:
-            arr[cell_x][cell_y] = 2
-        else:
-            print("Warning: Out of bounds for cell:", cell_x, cell_y)
+        cv2.drawContours(mask, [ball], -1, 100, thickness=cv2.FILLED, offset=(-x, -y))
     for ball in highprio:
-        counter = counter + 1
-        center, _ = ball
+        cv2.drawContours(mask, [ball], -1, 155, thickness=cv2.FILLED, offset=(-x, -y))
+    for ball in gooseEgg:
+        cv2.drawContours(mask, [ball], -1, 20, thickness=cv2.FILLED, offset=(-x, -y))
 
-        cell_x = (center[0] - x) // cell_width
-        cell_y = (center[1] - y) // cell_height
-        if 0 <= cell_x < columns and 0 <= cell_y < rows:
-            arr[cell_x][cell_y] = 3
-        else:
-            print("Warning: Out of bounds for cell:", cell_x, cell_y)
+    for row in range(rows):
+        for col in range(columns):
+            cell_x_start = col * cell_width
+            cell_y_start = row * cell_height
+            cell_x_end = cell_x_start + cell_width
+            cell_y_end = cell_y_start + cell_height
+
+            # Check if any part of the cell is within the mask
+            if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 255):
+                arr[row][col] = 1
+            if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 100):
+                arr[row][col] = 2
+            if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 155):
+                arr[row][col] = 3
+            if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 20):
+                arr[row][col] = 1
    
     return output_image
 
-def find_outer_walls(frame):
+def find_walls(frame):
+    minimum_size = 100
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_red = np.array([0, 100, 100])
     upper_red = np.array([10, 255, 255])
     mask = cv2.inRange(hsv, lower_red, upper_red)
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    max_contour = max(contours, key=cv2.contourArea)
+    highest_size = 0
+    largest_contour = None
 
     for contour in contours:
-        cv2.drawContours(frame, [contour], -1, (0, 255, 0), 2)
-        cv2.boundingRect(contour)
-        if contour is not max_contour:
+        x2, y2, w2, h2 = cv2.boundingRect(contour)
+        size = w2 * h2
+        if size > highest_size:
+            highest_size = size
+            largest_contour = contour
+    for contour in contours:
+        x2, y2, w2, h2 = cv2.boundingRect(contour)
+        size = w2 * h2
+        if size > minimum_size and size < highest_size/2:
             walls.append(contour)
-
-    contour_image = cv2.drawContours(frame.copy(), [max_contour], -1, (255, 255, 0), 2)
-    x, y, w, h = cv2.boundingRect(max_contour)
-
-    return contour_image, (x, y, w ,h)
+    return cv2.boundingRect(largest_contour)
 
 
 
@@ -121,6 +130,10 @@ def isValidColorWall(R, G, B):
 
 #def create_sparse_map(bounding_box_size, balls):
 
+def print_grid(grid):
+    for row in grid:
+        print(" ".join(map(str, row)))
+
 def main():
     balls = []
     # Image Capture
@@ -135,10 +148,11 @@ def main():
         return
     frame = detect_Objects(input_image)
 
-
     cv2.imshow('Output Image', frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+    print_grid(arr)
 
     # Video Capture
     some_value = 0
