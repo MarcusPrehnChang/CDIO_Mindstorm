@@ -55,8 +55,6 @@ def map_objects(balls, highprio, box_dimensions, output_image):
 
     counter = 0
 
-
-
     for ball in balls:
         counter = counter + 1
         center, _ = ball
@@ -134,6 +132,8 @@ def main():
         print("Error: Could not open or read the image")
         return
     frame = detect_Objects(input_image)
+    for wall in walls:
+        print(wall)
 
 
     cv2.imshow('Output Image', frame)
