@@ -108,6 +108,7 @@ def find_triangle(frame):
     lower_green = np.array([35, 50, 50])
     upper_green = np.array([85, 255, 255])
     mask = cv2.inRange(hsv, lower_green, upper_green)
+    points = []
 
     # Finding based on shape
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -117,8 +118,11 @@ def find_triangle(frame):
         approx = cv2.approxPolyDP(i, 0.01*cv2.arcLength(i, True), True)
         if len(approx) == 3:
             frame = cv2.drawContours(frame, [i], -1, (0,0,0), 3)
+            for n in approx:
+                print(n[0])
+                points.append(n[0])
 
-    return frame
+    return frame, points
 
 
 def get_array():
@@ -151,7 +155,11 @@ def main():
 
     input2 = cv2.resize(cv2.imread('images/dark_green_triangle.png'), (1000, 1000))
 
-    cv2.imshow('Example', find_triangle(input2))
+    newFrame, points = find_triangle(input2)
+
+    cv2.imshow('Example', newFrame)
+
+    print(points)
 
     # input_image = cv2.imread('images/whiteball.jpg')
 
