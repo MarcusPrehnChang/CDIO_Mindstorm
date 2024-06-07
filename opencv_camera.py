@@ -12,7 +12,7 @@ highprio = []
 number_of_minimum_balls = 11
 
 def detect_Objects(frame):
-    find_ball(frame)
+    #find_ball(frame)
     box_dimensions = find_outer_walls(frame)
     return frame
 
@@ -79,23 +79,30 @@ def map_objects(balls, highprio, box_dimensions, output_image):
     return output_image
 
 def find_outer_walls(frame):
+    minimum_size = 100
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_red = np.array([0, 100, 100])
     upper_red = np.array([10, 255, 255])
     mask = cv2.inRange(hsv, lower_red, upper_red)
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    max_contour = max(contours, key=cv2.contourArea)
+    highest_size = 0
+    x, y, w, h = 0
 
     for contour in contours:
-        cv2.drawContours(frame, [contour], -1, (0, 255, 0), 2)
-        cv2.boundingRect(contour)
-        if contour is not max_contour:
+        x2, y2, w2, h2 = cv2.boundingRect(contour)
+        size = w2 * h2
+        if size > highest_size:
+            highest_size = size
+            x, y, w, h = x2, y2, w2, h2
+
+    for contour in contours:
+        #cv2.drawContours(frame, [contour], -1, (0, 255, 0), 2)
+        if size > minimum_size and size < highest_size:
+            print(size)
+            cv2.rectangle(frame,(x,y), (x+w,y+h), (0,0,255),2)
             walls.append(contour)
 
-    contour_image = cv2.drawContours(frame.copy(), [max_contour], -1, (255, 255, 0), 2)
-    x, y, w, h = cv2.boundingRect(max_contour)
-
-    return contour_image, (x, y, w ,h)
+    return (x, y, w ,h)
 
 
 
@@ -132,8 +139,6 @@ def main():
         print("Error: Could not open or read the image")
         return
     frame = detect_Objects(input_image)
-    for wall in walls:
-        print(wall)
 
 
     cv2.imshow('Output Image', frame)
