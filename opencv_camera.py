@@ -127,7 +127,7 @@ def find_triangle(frame):
     return frame, points
 
 
-def get_orientation(points):
+def find_abc(points):
     # Init the points to x and y
     x1, y1 = points[0]
     x2, y2 = points[1]
@@ -138,15 +138,39 @@ def get_orientation(points):
     length2 = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
     length3 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
 
-    # Determine which point is C
+    # Determine which point is C (the return is in this order A, B, C)
     if math.isclose(length1, length2, rel_tol=1):
-        print(points[0])
+        return points[1], points[2], points[0]
     elif math.isclose(length3, length2, rel_tol=1):
-        print(points[2])
+        return points[0], points[1], points[2]
     elif math.isclose(length1, length2, rel_tol=1):
-        print(points[1])
+        return points[0], points[2], points[1]
+    else:
+        return False
 
 
+def get_orientation(points):
+    # Find A,B and C points
+    A, B, C = find_abc(points)
+
+    # Init the points to x and y
+    x1, y1 = A
+    x2, y2 = B
+    x3, y3 = C
+
+    # Calculate the point between A and B
+    Mx = (x2 + x1) / 2
+    My = (y2 + y1) / 2
+
+    print("Mx:", Mx)
+    print("My:", My)
+
+    print("x3:", x3)
+    print("y3:", y3)
+
+    # Calculate the vector (direction the robot is going)
+    V = [Mx - x3, My - y3]
+    return V
 
 def get_array():
     return arr
@@ -182,7 +206,8 @@ def main():
 
     cv2.imshow('Example', newFrame)
 
-    get_orientation(points)
+    vec = get_orientation(points)
+    print('Vector Direction:', vec)
 
     print(points)
 
