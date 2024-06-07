@@ -7,11 +7,17 @@ columns = 50
 rows = 50
 arr = [[0]*columns for _ in range(rows)]
 walls = []
+balls = []
+highprio = []
 number_of_minimum_balls = 11
 
+def detect_Objects(frame):
+    find_ball(frame)
+    box_dimensions = find_outer_walls(frame)
+
+
+
 def find_ball(frame, min_radius=5, max_radius=20):
-    balls = []
-    highprio = []
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
@@ -35,7 +41,7 @@ def find_ball(frame, min_radius=5, max_radius=20):
             elif min_radius < radius < max_radius and isHighPrioBall(r, b, g):   
                 cv2.circle(frame, center, radius, (0,0,0), 2)
                 highprio.append((center, radius))   
-    return frame, balls, highprio
+    return balls, highprio
 
 def map_objects(balls, highprio, box_dimensions, output_image):
     x, y, w,h = box_dimensions
@@ -48,6 +54,8 @@ def map_objects(balls, highprio, box_dimensions, output_image):
         cv2.line(output_image, (x, y+cell_width*i), (x+w,y+cell_width*i), (255, 0, 0))
 
     counter = 0
+
+
 
     for ball in balls:
         counter = counter + 1
@@ -74,14 +82,10 @@ def map_objects(balls, highprio, box_dimensions, output_image):
 
 def find_outer_walls(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
     lower_red = np.array([0, 100, 100])
     upper_red = np.array([10, 255, 255])
-
     mask = cv2.inRange(hsv, lower_red, upper_red)
-
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
     max_contour = max(contours, key=cv2.contourArea)
 
     for contour in contours:
@@ -94,6 +98,8 @@ def find_outer_walls(frame):
     x, y, w, h = cv2.boundingRect(max_contour)
 
     return contour_image, (x, y, w ,h)
+
+
 
 def get_array():
     return arr
