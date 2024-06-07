@@ -146,6 +146,8 @@ def get_orientation(points):
     elif math.isclose(length1, length2, rel_tol=1):
         print(points[1])
 
+
+
 def get_array():
     return arr
 
