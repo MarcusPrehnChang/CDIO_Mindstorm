@@ -104,7 +104,7 @@ def find_outer_walls(frame):
     return contour_image, (x, y, w, h)
 
 
-def find_triangle(frame):
+def find_triangle(frame, area_size=600):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_green = np.array([35, 50, 50])
@@ -119,34 +119,43 @@ def find_triangle(frame):
     for i in contours:
         approx = cv2.approxPolyDP(i, 0.01 * cv2.arcLength(i, True), True)
         if len(approx) == 3:
-            frame = cv2.drawContours(frame, [i], -1, (0, 0, 0), 3)
-            for n in approx:
-                print(n[0])
-                points.append(n[0])
+            [area, triangle] = cv2.minEnclosingTriangle(i)
+            if area > area_size:
+                frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
+                points = triangle
+                print(area)
+                print(triangle)
 
     return frame, points
 
 
 def find_abc(points):
     # Init the points to x and y
-    x1, y1 = points[0]
-    x2, y2 = points[1]
-    x3, y3 = points[2]
+    x1, y1 = points[0][0]
+    x2, y2 = points[1][0]
+    x3, y3 = points[2][0]
 
     # Calculate the distance between points using the Afstandsformlen
     length1 = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     length2 = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
     length3 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
 
+    print("length1: " + length1.__str__())
+    print("length2: " + length2.__str__())
+    print("length3: " + length3.__str__())
+
     # Determine which point is C (the return is in this order A, B, C)
-    if math.isclose(length1, length2, rel_tol=1):
-        return points[1], points[2], points[0]
-    elif math.isclose(length3, length2, rel_tol=1):
-        return points[0], points[1], points[2]
-    elif math.isclose(length1, length2, rel_tol=1):
-        return points[0], points[2], points[1]
+    if math.isclose(length1, length2, abs_tol=10):
+        #print("1")
+        return points[1][0], points[2][0], points[0][0]
+    elif math.isclose(length3, length2, abs_tol=10):
+        #print("2")
+        return points[0][0], points[1][0], points[2][0]
+    elif math.isclose(length1, length3, abs_tol=10):
+        #print("3")
+        return points[0][0], points[2][0], points[1][0]
     else:
-        return False
+        return None, None, None
 
 
 def get_orientation(points):
@@ -162,15 +171,17 @@ def get_orientation(points):
     Mx = (x2 + x1) / 2
     My = (y2 + y1) / 2
 
-    print("Mx:", Mx)
-    print("My:", My)
+    #print("Mx:", Mx)
+    #print("My:", My)
 
-    print("x3:", x3)
-    print("y3:", y3)
+    #print("x3:", x3)
+    #print("y3:", y3)
 
     # Calculate the vector (direction the robot is going)
-    V = [Mx - x3, My - y3]
+    # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
+    V = [x3 - Mx, (y3 - My) * -1]
     return V
+
 
 def get_array():
     return arr
@@ -200,7 +211,7 @@ def main():
     # Image Capture
     input_image = cv2.resize(cv2.imread('images/wallplusballs.jpg'), (1000, 1000))
 
-    input2 = cv2.resize(cv2.imread('images/dark_green_triangle.png'), (1000, 1000))
+    input2 = cv2.resize(cv2.imread('images/triangle_robot_balls.jpg'), (1000, 1000))
 
     newFrame, points = find_triangle(input2)
 
@@ -208,8 +219,6 @@ def main():
 
     vec = get_orientation(points)
     print('Vector Direction:', vec)
-
-    print(points)
 
     # input_image = cv2.imread('images/whiteball.jpg')
 
