@@ -1,48 +1,66 @@
+#!/usr/bin/env pybricks-micropython
 import socket
-import time
+
+from pybricks.hubs import EV3Brick
+from pybricks.ev3devices import Motor, GyroSensor
+from pybricks.parameters import Port
+from pybricks.robotics import DriveBase
+from pybricks.tools import wait
+
+# Initialize the EV3 Brick
+ev3 = EV3Brick()
+
+# Initialize the motors connected to the wheels
+left_motor = Motor(Port.A)
+right_motor = Motor(Port.C)
+small_motor = Motor(Port.B)
+
+# Create a DriveBase object with the initialized motors
+# Adjust the wheel diameter and axle track according to your robot design
+robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=110)
+# robot.settings(straight_speed=200, straight_acceleration=100, turn_rate=100)
+
+gyro_sensor = GyroSensor(Port.S1)
 
 
-import pywifi
-from pywifi import const
-import comtypes
-
-def wifi_connect(ssid, password):
-    wifi = pywifi.PyWiFi()
-
-    # Get the first wireless interface.
-    iface = wifi.interfaces()[0]
-
-    # Disconnect all connections.
-    iface.disconnect()
-    time.sleep(1)
-
-    # Create a new profile with the given ssid and password.
-    profile = pywifi.Profile()
-    profile.ssid = ssid
-    profile.auth = const.AUTH_ALG_OPEN
-    profile.akm.append(const.AKM_TYPE_WPA2PSK)
-    profile.cipher = const.CIPHER_TYPE_CCMP
-    profile.key = password
-
-    # Remove all other profiles and add the new one.
-    iface.remove_all_network_profiles()
-    iface.add_network_profile(profile)
-
-    # Connect to the network.
-    iface.connect(profile)
-    time.sleep(10)
-
-    if iface.status() == const.IFACE_CONNECTED:
-        print(f"Connected to {ssid}")
+# angle = degrees to turn, speed = mm/s
+def turn(angle, speed):
+    gyro_sensor.reset_angle(0)
+    if angle < 0:
+        while gyro_sensor.angle() > angle:
+            left_motor.run(speed=(-1 * speed))
+            right_motor.run(speed=speed)
+            wait(10)
+    elif angle > 0:
+        while gyro_sensor.angle() < angle:
+            left_motor.run(speed=speed)
+            right_motor.run(speed=(-1 * speed))
+            wait(10)
     else:
-        print("Failed to connect")
+        print("Error: no angle chosen")
 
-    # List available networks.
-    print("Available networks:")
-    networks = iface.scan_results()
-    for network in networks:
-        print(network.ssid)
+    left_motor.brake()
+    right_motor.brake()
 
+
+# distance = mm, robotSpeed = mm/s
+def drive(distance, robot_speed):
+    robot.reset()
+    gyro_sensor.reset_angle(0)
+
+    PROPORTIONAL_GAIN = 1.1
+    if distance < 0:  # move backwards
+        while robot.distance() > distance:
+            reverse_speed = -1 * robot_speed
+            angle_correction = -1 * (PROPORTIONAL_GAIN * gyro_sensor.angle())
+            robot.drive(reverse_speed, angle_correction)
+            wait(10)
+    elif distance > 0:  # move forwards
+        while robot.distance() < distance:
+            angle_correction = -1 * PROPORTIONAL_GAIN * gyro_sensor.angle()
+            robot.drive(robot_speed, angle_correction)
+            wait(10)
+    robot.stop()
 
 def client_program(hostname):
     # Name and port of the host
@@ -54,7 +72,7 @@ def client_program(hostname):
     client_socket.connect((host, port))
 
     # Take input
-    message = input(" -> ")
+    message = "ready"
 
     while message.lower().strip() != 'bye':
         # Send message and receive response
@@ -63,18 +81,17 @@ def client_program(hostname):
 
         # Show in terminal
         print('Received from server: ' + data)
-
+        if (data == "drive"):
+            drive(100, 50)
         # Taking input again
-        message = input(" -> ")
+        message = "recieved"
 
     # Close the connection when receiving 'bye'
     client_socket.close()
 
 
-def main():
-    wifi_connect("OnePlus 11 5G", "s92iynbj")
+def connect():
     client_program("192.168.23.124")
 
 
-if __name__ == "__main__":
-    main()
+connect()
