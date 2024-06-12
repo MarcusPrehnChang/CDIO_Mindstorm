@@ -133,7 +133,7 @@ grid = [
 
 ]
 
-start = (2, 2)
+start = (8, 2)
 goals = [(2, 4), (7, 4), (12, 4), (17, 4), (22, 4)]
 object_size = (2, 2)  # The moving object is 2x2 cells big
 
