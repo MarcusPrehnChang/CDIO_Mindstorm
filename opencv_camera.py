@@ -111,6 +111,9 @@ def find_walls(frame):
         if size > minimum_size and size < highest_size/2:
             walls.append(contour)
 
+
+    return cv2.boundingRect(largest_contour)
+
 def find_triangle(frame, area_size=600):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
