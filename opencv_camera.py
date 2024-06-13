@@ -2,33 +2,34 @@ import math
 
 import cv2
 import numpy as np
+import Translator
 
 # import pandas as pd
 
 index = ["color", "color_name", "hex", "R", "G", "B"]
-columns = 50
-rows = 50
+columns = 90
+rows = 60
 arr = [[0] * columns for _ in range(rows)]
 walls = []
 balls = []
 highprio = []
 gooseEgg = []
 number_of_minimum_balls = 11
-
+robot_identifier = []
 
 def detect_Objects(frame):
     find_ball(frame)
     bounding_box = find_walls(frame)
     frame = map_objects(bounding_box, frame)
+    Translator.translate(arr)
     return frame
 
-
-def find_ball(frame, min_radius=5, max_radius=20):
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    edges = cv2.Canny(blurred, 50, 150)
-    contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+def find_highprio(frame, min_radius=5, max_radius=20):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lower_orange = np.array([18, 10, 0])
+    upper_orange = np.array([50, 255, 255])
+    mask = cv2.inRange(hsv, lower_orange, upper_orange)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
@@ -37,6 +38,32 @@ def find_ball(frame, min_radius=5, max_radius=20):
         circularity = 4 * np.pi * area / (perimeter * perimeter)
 
         if circularity > 0.8:
+            print("circularity of orange: ", circularity)
+            ((x, y), radius) = cv2.minEnclosingCircle(contour)
+            r, b, g = get_pixel_color(frame, int(x), int(y))
+            center = (int(x), int(y))
+            radius = int(radius)
+            if min_radius < radius < max_radius:
+                cv2.circle(frame, center, radius, (0,0,0), 2)
+                highprio.append(contour)
+
+
+def find_ball(frame, min_radius=5, max_radius=20):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, 50, 150)
+    contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    find_highprio(frame)
+
+
+    for i, contour in enumerate(contours):
+        area = cv2.contourArea(contour)
+        perimeter = cv2.arcLength(contour, True)
+        if perimeter == 0:
+            continue
+        circularity = 4 * np.pi * area / (perimeter * perimeter)
+        if circularity > 0.8:
+            print("circularity passed: ")
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
             center = (int(x), int(y))
@@ -44,23 +71,35 @@ def find_ball(frame, min_radius=5, max_radius=20):
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
                 balls.append(contour)
-            elif min_radius < radius < max_radius and isHighPrioBall(r, b, g):   
-                cv2.circle(frame, center, radius, (0,0,0), 2)
-                highprio.append(contour)
             elif radius > max_radius:
                 cv2.circle(frame, center, radius, (255,0,0), 2)
                 gooseEgg.append(contour)
 
-                
+    
     return balls, highprio
+ 
+
+def robot_builder(robot_size):
+    robot_length = 30
+    robot_width = 20
+    triangle_height = 7
+    triangle_bottom = 6
+    robot_grid_height = math.ceil((robot_length/triangle_height) * robot_size)
+    robot_grid_width = math.ceil((robot_width/triangle_bottom) * robot_size)
+
+    return robot_grid_height, robot_grid_width
 
 def map_objects(box_dimensions, output_image):
     x, y, w, h = box_dimensions
-    cell_width = w // rows
-    cell_height = h // columns
+    cell_width = w // columns
+    cell_height = h // rows
+    print("box_dimensions: ", box_dimensions)
+    print("cell_height:", cell_height)
 
     counter = 0
     mask = np.zeros((h,w), dtype=np.uint8)
+    cv2.imshow('cockus minimus', output_image)
+
     for wall in walls:
         cv2.drawContours(mask, [wall], -1, 255, thickness=cv2.FILLED, offset=(-x, -y))
     for ball in balls:
@@ -69,7 +108,27 @@ def map_objects(box_dimensions, output_image):
         cv2.drawContours(mask, [ball], -1, 155, thickness=cv2.FILLED, offset=(-x, -y))
     for ball in gooseEgg:
         cv2.drawContours(mask, [ball], -1, 20, thickness=cv2.FILLED, offset=(-x, -y))
+    for robot in robot_identifier:
+        print(robot)
+        cv2.drawContours(mask, [robot], -1, 75, thickness=cv2.FILLED, offset=(-x, -y))
+    robot_size = 0
 
+    for i in range(rows + 1):
+        start_point = (0, i * cell_height)
+        end_point = (w, i * cell_height)
+        cv2.line(mask, start_point, end_point, (143),1)
+
+    for j in range(columns + 1):
+        start_point = (j * cell_height, 0)
+        end_point = (j * cell_height, h)
+        cv2.line(mask, start_point, end_point, (143),1)
+
+
+    cv2.imshow('cockus pikus', mask)
+
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
     for row in range(rows):
         for col in range(columns):
             cell_x_start = col * cell_width
@@ -86,14 +145,19 @@ def map_objects(box_dimensions, output_image):
                 arr[row][col] = 3
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 20):
                 arr[row][col] = 1
-   
-    return output_image
+            if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 75):
+                robot_size += 1
+                arr[row][col] = 5
+                
+
+
+    return output_image, robot_size
 
 def find_walls(frame):
     minimum_size = 100
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower_red = np.array([0, 100, 100])
-    upper_red = np.array([10, 255, 255])
+    lower_red = np.array([170, 200, 0])
+    upper_red = np.array([185, 255, 255])
     mask = cv2.inRange(hsv, lower_red, upper_red)
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     highest_size = 0
@@ -110,8 +174,6 @@ def find_walls(frame):
         size = w2 * h2
         if size > minimum_size and size < highest_size/2:
             walls.append(contour)
-
-
     return cv2.boundingRect(largest_contour)
 
 def find_triangle(frame, area_size=600):
@@ -124,17 +186,15 @@ def find_triangle(frame, area_size=600):
 
     # Finding based on shape
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    print("Number of contours detected: ", len(contours))
 
     for i in contours:
-        approx = cv2.approxPolyDP(i, 0.01 * cv2.arcLength(i, True), True)
+        approx = cv2.approxPolyDP(i, 0.1 * cv2.arcLength(i, True), True)
         if len(approx) == 3:
             [area, triangle] = cv2.minEnclosingTriangle(i)
             if area > area_size:
                 frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
+                robot_identifier.append(i)
                 points = triangle
-                print(area)
-                print(triangle)
 
     return frame, points
 
@@ -150,9 +210,9 @@ def find_abc(points):
     length2 = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
     length3 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
 
-    print("length1: " + length1.__str__())
-    print("length2: " + length2.__str__())
-    print("length3: " + length3.__str__())
+    #print("length1: " + length1.__str__())
+    #print("length2: " + length2.__str__())
+    #print("length3: " + length3.__str__())
 
     # Determine which point is C (the return is in this order A, B, C)
     if math.isclose(length1, length2, abs_tol=10):
@@ -223,35 +283,28 @@ def print_grid(grid):
 def main():
     balls = []
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/wallplusballs.jpg'), (1000, 1000))
+    input_image = cv2.resize(cv2.imread('images/Robot_in_field.jpg'), (1280, 720))
 
-    input2 = cv2.resize(cv2.imread('images/triangle_robot_balls.jpg'), (1000, 1000))
+    newFrame, points = find_triangle(input_image)
 
-    newFrame, points = find_triangle(input2)
 
-    cv2.imshow('Example', newFrame)
+    #print(points)
 
     vec = get_orientation(points)
     print('Vector Direction:', vec)
-
-    # input_image = cv2.imread('images/whiteball.jpg')
-
-    # input_image = cv2.resize(cv2.imread('images/gulvbillede.jpg'), (600, 750))
 
     if input_image is None:
         print("Error: Could not open or read the image")
         return
     frame = detect_Objects(input_image)
 
-    cv2.imshow('Output Image', frame)
+    #cv2.imshow('Output Image', frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
     print_grid(arr)
 
     # Video Capture
-    some_value = 0
-    amount_correct = 0
 
     """
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)

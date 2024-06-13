@@ -1,15 +1,48 @@
 import numpy as np
 
-def translate(array):
-    goals = []
-    highprio_goal = []
-    for i in range(len(array)):
-        for j in range(len(array[i])):
-            if array[i][j] == 2:
-                goals.append((i,j))
-            elif array[i][j] == 3:
-                highprio_goal.append((i,j))
-                
-    return goals, highprio_goal
+class GridTranslator:
+    def __init__(self, grid):
+        self.grid = grid
+        self.start_point = None
+        self.goals = []
+        self.visited = set()
+
+
+    def translate(self):
+        for row_index in range(len(self.grid)):
+            for col_index in range(len(self.grid[0])):
+                value = self.grid[row_index][col_index]
+            if value == 5:
+                self.start_point = (row_index, col_index)
+
+
+    def find_area(self, start_row, start_col, value):
+        area = []
+        stack = [(start_row, start_col)]
+        while stack:
+            row, col = stack.pop()
+            if (row, col) not in self.visited and self.grid[row][col] == value:
+                self.visited.add((row,col))
+                area.append((row,col))
+                if row > 0:
+                    stack.append((row - 1, col))
+                if row < len(self.grid) - 1:
+                    stack.append((row + 1, col))
+                if col > 0:
+                    stack.append((row, col - 1))
+                if col < len(self.grid[0]) - 1:
+                    stack.appen((row, col + 1))
+        return area
+    
+
+    def find_center(self, area):
+        row_sum = sum(row for row, col in area) / len(area)
+        col_sum = sum(col for row, col in area) / len(area)
+        center_row = int(round(row_sum))
+        center_col = int(round(col_sum))
+        return (center_row, center_col)
+
+
+    print(goals)
 
 
