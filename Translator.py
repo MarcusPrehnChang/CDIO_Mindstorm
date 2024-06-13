@@ -1,10 +1,15 @@
 import numpy as np
 
 def translate(array):
-    goals = set()
-    for i in range(array[0]):
-        for j in range(array[1]):
-            if array[i][j] == 2 or array[i][j] == 3:
-                goals.add(i,j)
-    return goals
+    goals = []
+    highprio_goal = []
+    for i in range(len(array)):
+        for j in range(len(array[i])):
+            if array[i][j] == 2:
+                goals.append((i,j))
+            elif array[i][j] == 3:
+                highprio_goal.append((i,j))
+                
+    return goals, highprio_goal
+
 
