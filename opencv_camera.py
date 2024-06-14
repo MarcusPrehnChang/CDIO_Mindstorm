@@ -2,7 +2,9 @@ import math
 
 import cv2
 import numpy as np
-import Translator
+
+from Translator import GridTranslator
+from pathFinder import find_path_to_multiple
 
 # import pandas as pd
 
@@ -21,7 +23,7 @@ def detect_Objects(frame):
     find_ball(frame)
     bounding_box = find_walls(frame)
     frame = map_objects(bounding_box, frame)
-    Translator.translate(arr)
+    
     return frame
 
 def find_highprio(frame, min_radius=5, max_radius=20):
@@ -36,8 +38,7 @@ def find_highprio(frame, min_radius=5, max_radius=20):
         if perimeter == 0:
             continue
         circularity = 4 * np.pi * area / (perimeter * perimeter)
-
-        if circularity > 0.8:
+        if circularity > 0.7:
             print("circularity of orange: ", circularity)
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
@@ -59,15 +60,19 @@ def find_ball(frame, min_radius=5, max_radius=20):
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
+
         if perimeter == 0:
             continue
         circularity = 4 * np.pi * area / (perimeter * perimeter)
-        if circularity > 0.8:
+        if circularity > 0.7:
             print("circularity passed: ")
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
-            center = (int(x), int(y))
+            x,y = int(x), int(y)
+            center = (x, y)
             radius = int(radius)
+
+            print(radius)
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
                 balls.append(contour)
@@ -93,8 +98,7 @@ def map_objects(box_dimensions, output_image):
     x, y, w, h = box_dimensions
     cell_width = w // columns
     cell_height = h // rows
-    print("box_dimensions: ", box_dimensions)
-    print("cell_height:", cell_height)
+
 
     counter = 0
     mask = np.zeros((h,w), dtype=np.uint8)
@@ -109,7 +113,6 @@ def map_objects(box_dimensions, output_image):
     for ball in gooseEgg:
         cv2.drawContours(mask, [ball], -1, 20, thickness=cv2.FILLED, offset=(-x, -y))
     for robot in robot_identifier:
-        print(robot)
         cv2.drawContours(mask, [robot], -1, 75, thickness=cv2.FILLED, offset=(-x, -y))
     robot_size = 0
 
@@ -151,17 +154,25 @@ def map_objects(box_dimensions, output_image):
                 
 
 
-    return output_image, robot_size
+    return output_image#, robot_size
 
 def find_walls(frame):
     minimum_size = 100
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_red = np.array([170, 200, 0])
     upper_red = np.array([185, 255, 255])
+    lower_red2 = np.array([0, 100, 0])
+    upper_red2 = np.array([5, 255, 255])
     mask = cv2.inRange(hsv, lower_red, upper_red)
+    mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    mask = cv2.bitwise_or(mask,mask2)
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     highest_size = 0
     largest_contour = None
+    cv2.imshow("pikus dickus", frame)
+    cv2.imshow("pikus cockus", mask)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
 
     for contour in contours:
         x2, y2, w2, h2 = cv2.boundingRect(contour)
@@ -263,7 +274,7 @@ def get_pixel_color(image, x, y):
 
 
 def isValidColorBall(R, G, B):
-    return R > 200 and G > 150 and B > 100
+    return R > 100 and G > 100 and B > 100
 
 
 def isHighPrioBall(R, G, B):
@@ -283,26 +294,30 @@ def print_grid(grid):
 def main():
     balls = []
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/Robot_in_field.jpg'), (1280, 720))
+    input_image = cv2.resize(cv2.imread('images/Robot_in_field.jpg'), (1280,720))
 
     newFrame, points = find_triangle(input_image)
+    if points is not None:
+        vec = get_orientation(points)
 
-
-    #print(points)
-
-    vec = get_orientation(points)
-    print('Vector Direction:', vec)
+    print(points)
 
     if input_image is None:
         print("Error: Could not open or read the image")
         return
     frame = detect_Objects(input_image)
-
+    grid_translator = GridTranslator(arr)
+    grid_translator.translate()
+    translated_goals, translated_high, translated_start = grid_translator.get_shit()
+    print('start: ', translated_start)
+    print('goals: ', translated_goals)
+    print('high: ', translated_high)
+    object_size = (2, 2)
+    path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
+    print("Path:", path)
     #cv2.imshow('Output Image', frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-    print_grid(arr)
 
     # Video Capture
 

@@ -76,9 +76,9 @@ def find_path_to_multiple(grid, start, goals, object_size):
     current_start = start
     remaining_goals = set(goals)
     print("goals:", remaining_goals)
+    index = 0
     while remaining_goals:
         paths = []
-
         for goal in remaining_goals:
             print("Running a_star with: ", current_start, goal, object_size)
             path = a_star(grid, current_start, goal, object_size)
@@ -93,6 +93,7 @@ def find_path_to_multiple(grid, start, goals, object_size):
         full_path.extend(shortest_path[1:])
         current_start = reached_goal
         remaining_goals.remove(reached_goal)
+        index += 1
 
     return full_path
 

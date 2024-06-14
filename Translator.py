@@ -5,15 +5,25 @@ class GridTranslator:
         self.grid = grid
         self.start_point = None
         self.goals = []
+        self.highprio = []
         self.visited = set()
 
 
     def translate(self):
+        for row in self.grid:
+            print(" ".join(map(str, row)))
         for row_index in range(len(self.grid)):
             for col_index in range(len(self.grid[0])):
                 value = self.grid[row_index][col_index]
-            if value == 5:
-                self.start_point = (row_index, col_index)
+                if value == 5 and (row_index, col_index) not in self.visited:
+                    start_area = self.find_area(row_index,col_index,value)
+                    self.start_point = self.find_center(start_area)
+                elif value == 2 and (row_index, col_index) not in self.visited:
+                    start_area = self.find_area(row_index,col_index,value)
+                    self.goals.append(self.find_center(start_area))
+                elif value == 3 and (row_index, col_index) not in self.visited:
+                    start_area = self.find_area(row_index,col_index,value)
+                    self.highprio.append(self.find_center(start_area))
 
 
     def find_area(self, start_row, start_col, value):
@@ -31,18 +41,21 @@ class GridTranslator:
                 if col > 0:
                     stack.append((row, col - 1))
                 if col < len(self.grid[0]) - 1:
-                    stack.appen((row, col + 1))
+                    stack.append((row, col + 1))
         return area
     
 
     def find_center(self, area):
-        row_sum = sum(row for row, col in area) / len(area)
-        col_sum = sum(col for row, col in area) / len(area)
+        row_sum = sum(row for row, _ in area) / len(area)
+        col_sum = sum(col for _, col in area) / len(area)
         center_row = int(round(row_sum))
         center_col = int(round(col_sum))
         return (center_row, center_col)
 
 
-    print(goals)
-
+    def get_shit(self):
+        return self.goals, self.highprio, self.start_point
+    
+    def get_goals(self):
+        return self.goals
 
