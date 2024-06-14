@@ -1,68 +1,11 @@
 #!/usr/bin/env pybricks-micropython
+import ast
 import socket
-
-from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import Motor, GyroSensor
-from pybricks.parameters import Port
-from pybricks.robotics import DriveBase
-from pybricks.tools import wait
-
-# Initialize the EV3 Brick
-ev3 = EV3Brick()
-
-# Initialize the motors connected to the wheels
-left_motor = Motor(Port.A)
-right_motor = Motor(Port.C)
-small_motor = Motor(Port.B)
-
-# Create a DriveBase object with the initialized motors
-# Adjust the wheel diameter and axle track according to your robot design
-robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=110)
-# robot.settings(straight_speed=200, straight_acceleration=100, turn_rate=100)
-
-gyro_sensor = GyroSensor(Port.S1)
+import autodrive
+import threading
 
 
-# angle = degrees to turn, speed = mm/s
-def turn(angle, speed):
-    gyro_sensor.reset_angle(0)
-    if angle < 0:
-        while gyro_sensor.angle() > angle:
-            left_motor.run(speed=(-1 * speed))
-            right_motor.run(speed=speed)
-            wait(10)
-    elif angle > 0:
-        while gyro_sensor.angle() < angle:
-            left_motor.run(speed=speed)
-            right_motor.run(speed=(-1 * speed))
-            wait(10)
-    else:
-        print("Error: no angle chosen")
-
-    left_motor.brake()
-    right_motor.brake()
-
-
-# distance = mm, robotSpeed = mm/s
-def drive(distance, robot_speed):
-    robot.reset()
-    gyro_sensor.reset_angle(0)
-
-    PROPORTIONAL_GAIN = 1.1
-    if distance < 0:  # move backwards
-        while robot.distance() > distance:
-            reverse_speed = -1 * robot_speed
-            angle_correction = -1 * (PROPORTIONAL_GAIN * gyro_sensor.angle())
-            robot.drive(reverse_speed, angle_correction)
-            wait(10)
-    elif distance > 0:  # move forwards
-        while robot.distance() < distance:
-            angle_correction = -1 * PROPORTIONAL_GAIN * gyro_sensor.angle()
-            robot.drive(robot_speed, angle_correction)
-            wait(10)
-    robot.stop()
-
-def client_program(hostname):
+def connect_to_server(hostname):
     # Name and port of the host
     host = hostname
     port = 5000
@@ -71,27 +14,51 @@ def client_program(hostname):
     client_socket = socket.socket()
     client_socket.connect((host, port))
 
+    return client_socket
+
+
+def send_message(message, client_socket):
+    print("Sending message: " + message)
+    client_socket.send(message.encode())
+
+
+def receive_message(client_socket):
+    data = client_socket.recv(1024).decode()
+    print("Received message: " + data)
+    return data
+
+
+def startup_sequence(hostname):
+    client_socket = connect_to_server(hostname)
     # Take input
-    message = "ready"
+    send_message("ready", client_socket)
+    message = receive_message(client_socket)
 
-    while message.lower().strip() != 'bye':
-        # Send message and receive response
-        client_socket.send(message.encode())
-        data = client_socket.recv(1024).decode()
+    if message.lower().strip() == "ready":
+        robot_heading, vector_list, square_size = get_info(client_socket)
 
-        # Show in terminal
-        print('Received from server: ' + data)
-        if (data == "drive"):
-            drive(100, 50)
-        # Taking input again
-        message = "recieved"
+        autodrive_thread = threading.Thread(target=autodrive.auto_drive, args=(vector_list, square_size, robot_heading))
+        autodrive_thread.start()
+        autodrive_thread.join()
 
-    # Close the connection when receiving 'bye'
     client_socket.close()
 
 
-def connect():
-    client_program("192.168.23.124")
+def get_info(client_socket):
+    robot_heading = ast.literal_eval(receive_message(client_socket))
+    send_message("received", client_socket)
+    vector_list = ast.literal_eval(receive_message(client_socket))
+    send_message("received", client_socket)
+    square_size = int(receive_message(client_socket))
+    send_message("received", client_socket)
+
+    return robot_heading, vector_list, square_size
 
 
-connect()
+def run_client():
+    startup_thread = threading.Thread(target=startup_sequence, args=(socket.gethostname(),))
+    startup_thread.start()
+    startup_thread.join()
+
+
+run_client()
