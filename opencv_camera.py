@@ -185,10 +185,13 @@ def find_walls(frame):
     return cv2.boundingRect(largest_contour)
 
 
-def find_triangle(frame, area_size=1400):
+def find_triangle(
+        frame,
+        area_size=1400,
+        lower_green=np.array([100, 130, 85]),
+        upper_green=np.array([130, 160, 105])
+):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
-    lower_green = np.array([100, 130, 85])
-    upper_green = np.array([130, 160, 105])
     mask = cv2.inRange(frame, lower_green, upper_green)
     points = []
 
@@ -201,6 +204,7 @@ def find_triangle(frame, area_size=1400):
             [area, triangle] = cv2.minEnclosingTriangle(i)
             if area > area_size:
                 print(area)
+                cv2.imshow('Mask Image', mask)
                 frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
                 robot_identifier.append(i)
                 points = triangle
@@ -283,27 +287,43 @@ def isValidColorWall(R, G, B):
     return R < 190 and G > 10 and B > 25
 
 
+# Increases the search for the triangle by increasing the sensitivity over 10 iterations.
 def inc_sen_triangle(frame):
     for i in range(10):
         global robot_identifier
         robot_identifier = []
-        find_triangle(frame, area_size=(1400 - (i * 10)))
+        find_triangle(
+            frame,
+            area_size=(1400 - (i * 10)),
+            lower_green=np.array([100 - (i * 5), 130 - (i * 5), 85 - (i * 5)]),
+            upper_green=np.array([130 + (i * 5), 160 + (i * 5), 105 + (i * 5)])
+        )
         if bool(robot_identifier):
             print("Triangle Found in: " + str(i))
             break
 
 
+# Increases the search for the balls by increasing the sensitivity over 10 iterations.
 def inc_sen_balls(frame):
     for i in range(10):
         global balls
         global highprio
         balls = []
         highprio = []
-        find_ball(frame, min_radius=(150 - (i * 10)), max_radius=(300 + (i * 10)))
-        find_highprio(frame, min_radius=(150 - (i * 10)), max_radius=(300 + (i * 10)))
+        find_ball(
+            frame,
+            min_radius=(150 - (i * 10)),
+            max_radius=(300 + (i * 10))
+        )
+        find_highprio(
+            frame,
+            min_radius=(150 - (i * 10)),
+            max_radius=(300 + (i * 10))
+        )
         if bool(balls or highprio):
             print("Ball Found")
             break
+
 
 # def create_sparse_map(bounding_box_size, balls):
 
