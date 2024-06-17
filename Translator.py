@@ -52,6 +52,24 @@ class GridTranslator:
         center_col = int(round(col_sum))
         return (center_row, center_col)
 
+    def make_list_of_lists(self, path):
+        goals = self.goals
+        list_of_lists = []
+        current_path = []
+        prev_path = 0
+        for i in range(0, len(path)):
+            if path[i] in goals:
+                current_path = path[prev_path:i+1]
+                list_of_lists.append(current_path)
+                prev_path = i+1
+
+
+
+
+        return list_of_lists
+                
+
+
 
     def get_shit(self):
         return self.goals, self.highprio, self.start_point
