@@ -1,7 +1,12 @@
 import socket
+import threading
+
+robot = None
+stop_flag = False
 
 
 def run_server():
+    global robot
     # Get hostname and port
     host = socket.gethostname()
     port = 5000
@@ -31,11 +36,15 @@ def receive_message(conn):
 
 
 def startup_sequence():
+    global robot
+    global stop_flag
+    # Run the server and get necessary information
     robot, address, server_socket = run_server()
 
-    # Take input
+    # receive startup message from the robot
     message = receive_message(robot)
 
+    # If the message is "ready", send the necessary information to the robot
     if message.lower().strip() == "ready":
         send_message("ready", robot)
         robot_heading, vector_list, square_size = get_drive_info()
@@ -47,10 +56,38 @@ def startup_sequence():
             if message.lower().strip() == "received":
                 send_message(square_size, robot)
                 message = receive_message(robot)
+                if message.lower().strip() == "received":
+                    print("Startup sequence complete")
+                    run_thread = threading.Thread(target=run_sequence)
+                    emergency_stop_thread = threading.Thread(target=emergency_stop_listener)
+                    emergency_stop_thread.start()
+                    run_thread.start()
+                    run_thread.join()
 
     server_socket.close()
 
 
+# run_sequence() needs to be implemented
+def run_sequence():
+    pass
+
+
+# send emergency stop message to robot to make it stop
+def emergency_stop():
+    global stop_flag
+    stop_flag = True
+
+
+def emergency_stop_listener():
+    global stop_flag
+    global robot
+    while True:
+        if stop_flag:
+            send_message("emergency stop", robot)
+            break
+
+
+# get_drive_info() needs to be implemented
 def get_drive_info():
     robot_heading = "[0, 1]"  # needs to receive from function
     vector_list = "[[[0, 1], [1, 0], [0, -1], [-1, 0]],[[0, 1], [1, 0], [0, -1], [-1, 0]]]"  # needs to receive from function
@@ -58,9 +95,9 @@ def get_drive_info():
     return robot_heading, vector_list, square_size
 
 
-def main():
-    startup_sequence()
+def start_server():
+    server_thread = threading.Thread(target=startup_sequence)
+    server_thread.start()
 
 
-if __name__ == "__main__":
-    main()
+start_server()

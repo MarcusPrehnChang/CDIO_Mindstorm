@@ -28,22 +28,78 @@ def receive_message(client_socket):
     return data
 
 
+# Global variable for the autodrive thread
+autodrive_thread = None
+# Global variable for the emergency stop flag
+stop_flag = False
+# Global variable to stop the emergency stop listener
+emergency_stop_listener = True
+# Global variable to stop the run
+run_is_not_done = True
+
+
+def listen_for_emergency_stop(client_socket):
+    global autodrive_thread
+    global stop_flag
+    # Listen for the emergency stop message
+    while emergency_stop_listener:
+        message = receive_message(client_socket)
+        if message.lower().strip() == "emergency stop":
+            if autodrive_thread is not None:
+                # Stop the autodrive thread
+                stop_flag = True
+                # Get new information
+                robot_heading, vector_list, square_size = get_info(client_socket)
+                # Restart the autodrive thread
+                autodrive_thread = threading.Thread(target=autodrive.auto_drive,
+                                                    args=(vector_list, square_size, robot_heading))
+                autodrive_thread.start()
+
+
 def startup_sequence(hostname):
+    global autodrive_thread
+    global emergency_stop_listener
+    global run_is_not_done
+    global stop_flag
+
+    # Connect to the server
     client_socket = connect_to_server(hostname)
-    # Take input
+    # Send ready message
     send_message("ready", client_socket)
     message = receive_message(client_socket)
 
     if message.lower().strip() == "ready":
-        robot_heading, vector_list, square_size = get_info(client_socket)
+        while run_is_not_done:
+            robot_heading, vector_list, square_size = get_info(client_socket)
 
-        autodrive_thread = threading.Thread(target=autodrive.auto_drive, args=(vector_list, square_size, robot_heading))
-        autodrive_thread.start()
-        autodrive_thread.join()
+            # Start the listen_for_emergency_stop thread
+            listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
+            # Start the autodrive thread
+            autodrive_thread = threading.Thread(target=autodrive.auto_drive,
+                                                args=(vector_list, square_size, robot_heading))
+            listen_thread.start()
+            autodrive_thread.start()
+
+            # Wait for the autodrive thread to finish
+            autodrive_thread.join()
+            # Stop the listen_for_emergency_stop thread to receive new messages
+            emergency_stop_listener = False
+
+            send_message("run is done", client_socket)
+            continuation_message = receive_message(client_socket)
+            if continuation_message == "run is done":
+                send_message("received", client_socket)
+                run_is_not_done = False
+
+            if continuation_message == "continue":
+                send_message("received", client_socket)
+                # Reset the emergency stop listener
+                stop_flag = False
 
     client_socket.close()
 
 
+# Get the robot heading, vector list, and square size
 def get_info(client_socket):
     robot_heading = ast.literal_eval(receive_message(client_socket))
     send_message("received", client_socket)
@@ -55,6 +111,7 @@ def get_info(client_socket):
     return robot_heading, vector_list, square_size
 
 
+# Run the client
 def run_client():
     startup_thread = threading.Thread(target=startup_sequence, args=(socket.gethostname(),))
     startup_thread.start()
