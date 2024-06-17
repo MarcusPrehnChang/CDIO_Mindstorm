@@ -63,7 +63,7 @@ class GridTranslator:
 
         return list_of_lists
 
-    def make_vectors(list_of_lists):
+    def make_vectors(self, list_of_lists):
         current_x = 0
         current_y = 0
         prev_x = 0
@@ -72,13 +72,14 @@ class GridTranslator:
         for list in list_of_lists:
             vectors = []
             for tuple in list:
+                small_list = []
                 current_x = tuple[0]
                 current_y = tuple[1]
                 if current_x != prev_x and prev_x != 0:
-                    vector = (current_x - prev_x, 0)
+                    vector = [current_x - prev_x, 0]
                     vectors.append(vector)
                 elif current_y != prev_y and prev_y != 0:
-                    vector = (0, current_y - prev_y)
+                    vector = [0, current_y - prev_y]
                     vectors.append(vector)
                 prev_x = tuple[0]
                 prev_y = tuple[1]

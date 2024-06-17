@@ -189,10 +189,15 @@ def find_walls(frame):
 
 def find_triangle(frame, area_size=600):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([35, 50, 50])
-    upper_green = np.array([85, 255, 255])
-    mask = cv2.inRange(hsv, lower_green, upper_green)
+    cv2.imshow("test1", frame)
+    cv2.waitKey(0)
+    lower_green = np.array([100, 130, 85])
+    upper_green = np.array([130, 160, 105])
+    mask = cv2.inRange(frame, lower_green, upper_green)
+    print("pik")
+    cv2.imshow("test", mask)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
     points = []
 
     # Finding based on shape
@@ -203,6 +208,7 @@ def find_triangle(frame, area_size=600):
         if len(approx) == 3:
             [area, triangle] = cv2.minEnclosingTriangle(i)
             if area > area_size:
+                print("I found a triangle")
                 frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
                 robot_identifier.append(i)
                 points = triangle
@@ -291,14 +297,15 @@ def print_grid(grid):
     for row in grid:
         print(" ".join(map(str, row)))
 
-def cockus():
+def get_info_from_camera():
     balls = []
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/Robot_in_field.jpg'), (1280,720))
+    input_image = cv2.resize(cv2.imread('images/real_map.jpg'), (1280,720))
 
     newFrame, points = find_triangle(input_image)
     if points is not None:
-        vec = get_orientation(points)
+        pass
+        #vec = get_orientation(points)
 
     print(points)
 
@@ -313,9 +320,13 @@ def cockus():
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
     print("Path:", path)
     vectors = grid_translator.make_list_of_lists(path)
-
+    print("work?", vectors)
     vectorlist = grid_translator.make_vectors(vectors)
 
+    #drawn_frame, points = find_triangle(input_image)
+    #robot_heading = get_orientation(points)
+    robot_heading = [-1,0]
+    return vectorlist, robot_heading
     # Video Capture
 
     """
@@ -347,5 +358,3 @@ def cockus():
     """
 
 
-if __name__ == "__main__":
-    main()

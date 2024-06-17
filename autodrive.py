@@ -99,16 +99,15 @@ def get_angle_to_turn(robot_heading, pointer_vector):
 
 def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
     for list_of_vectors in list_of_list_of_vectors:
+        pick_up_ball()
         navigate_to_ball(list_of_vectors, square_size, robot_heading)
         #if stop_flag:
             #break
-        pick_up_ball()
 
 
 def pick_up_ball():
-    small_motor.run(-300)
-    wait(1000)
-
+    small_motor.run(-400)
+    wait(10000)
 
 # Stop the robot
 robot.stop()

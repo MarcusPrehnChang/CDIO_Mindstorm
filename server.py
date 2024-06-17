@@ -1,5 +1,6 @@
 import socket
 import threading
+from opencv_camera import get_info_from_camera as get_inf
 
 robot = None
 stop_flag = False
@@ -30,7 +31,7 @@ def send_message(message, conn):
 
 
 def receive_message(conn):
-    data = conn.recv(1024).decode()
+    data = conn.recv(4096).decode()
     print("Received message: " + str(data))
     return data
 
@@ -89,9 +90,13 @@ def emergency_stop_listener():
 
 # get_drive_info() needs to be implemented
 def get_drive_info():
-    robot_heading = str([0, 1])  # needs to receive from function
-    vector_list = str([[[0, 1], [1, 0], [0, -1], [-1, 0]],[[0, 1], [1, 0], [0, -1], [-1, 0]]])  # needs to receive from function
-    square_size = str(200)  # needs to receive from function
+    vector_list, robot_heading = get_inf()
+    robot_heading = str(robot_heading)  # needs to receive from function
+    vector_list = vector_list[0] # needs to receive from function
+    vector_list = [vector_list]
+    vector_list = str(vector_list)
+    square_size = str(20)  # needs to receive from function
+
     return robot_heading, vector_list, square_size
 
 

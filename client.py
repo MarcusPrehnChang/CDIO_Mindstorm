@@ -1,7 +1,6 @@
 #!/usr/bin/env pybricks-micropython
 import socket
 from autodrive import auto_drive
-import threading
 
 
 def connect_to_server(hostname):
