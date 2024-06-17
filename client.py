@@ -1,7 +1,6 @@
 #!/usr/bin/env pybricks-micropython
-import ast
 import socket
-import autodrive
+from autodrive import auto_drive
 import threading
 
 
@@ -18,13 +17,13 @@ def connect_to_server(hostname):
 
 
 def send_message(message, client_socket):
-    print("Sending message: " + message)
+    print("Sending message: " + str(message))
     client_socket.send(message.encode())
 
 
 def receive_message(client_socket):
     data = client_socket.recv(1024).decode()
-    print("Received message: " + data)
+    print("Received message: " + str(data))
     return data
 
 
@@ -51,9 +50,8 @@ def listen_for_emergency_stop(client_socket):
                 # Get new information
                 robot_heading, vector_list, square_size = get_info(client_socket)
                 # Restart the autodrive thread
-                autodrive_thread = threading.Thread(target=autodrive.auto_drive,
-                                                    args=(vector_list, square_size, robot_heading))
-                autodrive_thread.start()
+                #autodrive_thread = threading.Thread(target=autodrive.auto_drive, args=(vector_list, square_size, robot_heading))
+                #autodrive_thread.start()
 
 
 def startup_sequence(hostname):
@@ -73,16 +71,16 @@ def startup_sequence(hostname):
             robot_heading, vector_list, square_size = get_info(client_socket)
 
             # Start the listen_for_emergency_stop thread
-            listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
+            # listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
             # Start the autodrive thread
-            autodrive_thread = threading.Thread(target=autodrive.auto_drive,
-                                                args=(vector_list, square_size, robot_heading))
-            listen_thread.start()
-            autodrive_thread.start()
+            # autodrive_thread = threading.Thread(target=autodrive.auto_drive, args=(vector_list, square_size, robot_heading,))
+            # listen_thread.start()
+            # autodrive_thread.start()
 
             # Wait for the autodrive thread to finish
-            autodrive_thread.join()
+            # autodrive_thread.join()
             # Stop the listen_for_emergency_stop thread to receive new messages
+            auto_drive(vector_list, square_size, robot_heading)
             emergency_stop_listener = False
 
             send_message("run is done", client_socket)
@@ -101,9 +99,9 @@ def startup_sequence(hostname):
 
 # Get the robot heading, vector list, and square size
 def get_info(client_socket):
-    robot_heading = ast.literal_eval(receive_message(client_socket))
+    robot_heading = eval(receive_message(client_socket))
     send_message("received", client_socket)
-    vector_list = ast.literal_eval(receive_message(client_socket))
+    vector_list = eval(receive_message(client_socket))
     send_message("received", client_socket)
     square_size = int(receive_message(client_socket))
     send_message("received", client_socket)
@@ -113,9 +111,10 @@ def get_info(client_socket):
 
 # Run the client
 def run_client():
-    startup_thread = threading.Thread(target=startup_sequence, args=(socket.gethostname(),))
-    startup_thread.start()
-    startup_thread.join()
+    startup_sequence("192.168.23.184")
+    # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
+    # startup_thread.start()
+    # startup_thread.join()
 
 
 run_client()

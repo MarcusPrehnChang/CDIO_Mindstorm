@@ -1,6 +1,6 @@
 #!/usr/bin/env pybricks-micropython
 import math
-from client import stop_flag
+# from client import stop_flag
 
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import Motor, GyroSensor
@@ -68,12 +68,12 @@ def navigate_to_ball(vector_list, square_size, robot_heading):
     for vector in vector_list:
         angle_to_turn = get_angle_to_turn(robot_heading, vector)
         distance_to_drive = get_distance_to_drive(vector, square_size)
-        if stop_flag:
-            break
+        #if stop_flag:
+            #break
         # Turn the robot to the correct angle
         turn(angle_to_turn, 200)
-        if stop_flag:
-            break
+        #if stop_flag:
+            #break
         # Drive the robot to the target distance
         drive(distance_to_drive, 200)
 
@@ -100,8 +100,8 @@ def get_angle_to_turn(robot_heading, pointer_vector):
 def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
     for list_of_vectors in list_of_list_of_vectors:
         navigate_to_ball(list_of_vectors, square_size, robot_heading)
-        if stop_flag:
-            break
+        #if stop_flag:
+            #break
         pick_up_ball()
 
 

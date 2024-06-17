@@ -291,7 +291,7 @@ def print_grid(grid):
     for row in grid:
         print(" ".join(map(str, row)))
 
-def main():
+def cockus():
     balls = []
     # Image Capture
     input_image = cv2.resize(cv2.imread('images/Robot_in_field.jpg'), (1280,720))
@@ -308,16 +308,13 @@ def main():
     frame = detect_Objects(input_image)
     grid_translator = GridTranslator(arr)
     grid_translator.translate()
-    translated_goals, translated_high, translated_start = grid_translator.get_shit()
-    print('start: ', translated_start)
-    print('goals: ', translated_goals)
-    print('high: ', translated_high)
+    translated_goals, translated_high, translated_start = grid_translator.get_info()
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
     print("Path:", path)
-    #cv2.imshow('Output Image', frame)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    vectors = grid_translator.make_list_of_lists(path)
+
+    vectorlist = grid_translator.make_vectors(vectors)
 
     # Video Capture
 

@@ -8,7 +8,7 @@ stop_flag = False
 def run_server():
     global robot
     # Get hostname and port
-    host = socket.gethostname()
+    host = "192.168.23.184"
     port = 5000
 
     # Get the instance of socket and start listening on host and port.
@@ -25,13 +25,13 @@ def run_server():
 
 
 def send_message(message, conn):
-    print("Sending message: " + message)
+    print("Sending message: " + str(message))
     conn.send(message.encode())
 
 
 def receive_message(conn):
     data = conn.recv(1024).decode()
-    print("Received message: " + data)
+    print("Received message: " + str(data))
     return data
 
 
@@ -89,9 +89,9 @@ def emergency_stop_listener():
 
 # get_drive_info() needs to be implemented
 def get_drive_info():
-    robot_heading = "[0, 1]"  # needs to receive from function
-    vector_list = "[[[0, 1], [1, 0], [0, -1], [-1, 0]],[[0, 1], [1, 0], [0, -1], [-1, 0]]]"  # needs to receive from function
-    square_size = "200"  # needs to receive from function
+    robot_heading = str([0, 1])  # needs to receive from function
+    vector_list = str([[[0, 1], [1, 0], [0, -1], [-1, 0]],[[0, 1], [1, 0], [0, -1], [-1, 0]]])  # needs to receive from function
+    square_size = str(200)  # needs to receive from function
     return robot_heading, vector_list, square_size
 
 
