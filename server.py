@@ -1,5 +1,8 @@
 import socket
 import threading
+
+import HSM
+import opencv_camera
 from opencv_camera import get_info_from_camera as get_inf
 
 robot = None
@@ -48,6 +51,7 @@ def startup_sequence():
     # If the message is "ready", send the necessary information to the robot
     if message.lower().strip() == "ready":
         send_message("ready", robot)
+        run_calibration_sequence(robot)
         robot_heading, vector_list, square_size = get_drive_info()
         send_message(robot_heading, robot)
         message = receive_message(robot)
@@ -77,6 +81,19 @@ def run_sequence():
 def emergency_stop():
     global stop_flag
     stop_flag = True
+
+
+def run_calibration_sequence(robot):
+    message = receive_message(robot)
+    if (message.lower().strip() == "calibrate ready"):
+        firstframe = opencv_camera.take_picture()
+        send_message("calibration move", robot)
+        message = receive_message(robot)
+        if (message.lower().strip() == "calibration done"):
+            secondframe = opencv_camera.take_picture()
+            calibration_difference = HSM.calibration(firstframe, secondframe)
+            send_message("calibration done", robot)
+            send_message(str(calibration_difference), robot)
 
 
 def emergency_stop_listener():

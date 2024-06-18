@@ -1,11 +1,12 @@
 import numpy as np
-import enum as enum
+from enum import Enum
 import opencv_camera
+from autodrive import calibration_move
 import pathFinder
 import Translator
 
 
-class phases(enum):
+class phases(Enum):
     Startup_phase = 1,
     Calibration_phase = 2,
     robot_phase = 3,
@@ -16,54 +17,49 @@ def main():
     running = True
     while(running):
         if current_phase == phases.Startup_phase:
-            startup
+            startup()
             current_phase = phases.robot_phase
 
         elif current_phase == phases.Calibration_phase:
-            calibration
+            pass
 
         elif current_phase == phases.robot_phase:
-            run_robot
+            run_robot()
 
         elif current_phase == phases.emergency_phase:
-            emergency_stop
-
+            emergency_stop()
 
 
 def startup():
-    print("numse")
     opencv_camera.run_image
 
-'''
-def calibration(first_position, second_position): #first_position og second er ikke rigtige frames
+
+def calibration(first_frame, second_frame): #first_position og second er ikke rigtige frames
     # skal erstattes af rigtige frames
-
-    first_triangle, first_point = opencv_camera.find_triangle(first_position)
-    a, b, first_tip_of_tri = opencv_camera.find_abc(first_point)
+    opencv_camera.detect_Objects(first_frame)
+    first_triangle, first_points = opencv_camera.find_triangle(first_frame)
+    a1, b1, first_tip_of_tri = opencv_camera.find_abc(first_points)
     #Giver mig det første punkt C i spidsen af trekanten
-
-    run_robot_calibration()
-
-    second_triangle, second_point = opencv_camera.find_triangle(second_position)
-    a2, b2, second_tip_of_tri = opencv_camera.find_abc(second_point)
+    cell_width = opencv_camera.cell_width
+    second_triangle, second_points = opencv_camera.find_triangle(second_frame)
+    a2, b2, second_tip_of_tri = opencv_camera.find_abc(second_points)
     #giver mig andet punkt C i spidsen af trekanten
 
-    first_tip_of_tri - second_tip_of_tri/ #størrelse af square = mængden af squares rykket
+    calibration_difference = cell_width / ((first_tip_of_tri[0] - first_tip_of_tri[1]) - (second_tip_of_tri[0] - second_tip_of_tri[1]))
+    abs(calibration_difference)
+    print(calibration_difference)
+    return calibration_difference
 
-    return None
-'''
 
-
-def calibration():
-    print("Calibrating...")
+#def calibration():
+    #print("Calibrating...")
 
 
 def run_robot_calibration():
-    print("drive2cm and turn 90")
-
-
-def calib_turn():
-    print("turn 90")
+    firstframe = opencv_camera.take_picture()
+    calibration_move()
+    secondframe = opencv_camera.take_picture()
+    calibration(firstframe, secondframe, 20)
 
 
 def run_robot():

@@ -1,5 +1,7 @@
 #!/usr/bin/env pybricks-micropython
 import socket
+
+import autodrive
 from autodrive import auto_drive
 
 
@@ -66,6 +68,7 @@ def startup_sequence(hostname):
     message = receive_message(client_socket)
 
     if message.lower().strip() == "ready":
+        run_calibration(client_socket)
         while run_is_not_done:
             robot_heading, vector_list, square_size = get_info(client_socket)
 
@@ -105,8 +108,20 @@ def get_info(client_socket):
     square_size = int(receive_message(client_socket))
     send_message("received", client_socket)
 
+    square_size = square_size * autodrive.calibration_variable
     return robot_heading, vector_list, square_size
 
+
+def run_calibration(client_socket):
+    send_message("calibrate ready", client_socket)
+    message = receive_message(client_socket)
+    if message.lower().strip() == "calibration move":
+        autodrive.calibration_move()
+        send_message("calibration done", client_socket)
+        message = receive_message(client_socket)
+        if message.lower().strip() == "calibration done":
+            calibration_difference = receive_message(client_socket)
+            autodrive.set_calibration_variable(float(calibration_difference))
 
 # Run the client
 def run_client():

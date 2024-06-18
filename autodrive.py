@@ -119,15 +119,17 @@ def calculate_square_size(amount_of_squares_length, amount_of_squares_width):
     return square_size
 
 
-def calibration_move(former_heading, new_heading):
-    former_heading = get_robot_heading()
-    drive(2000,300)
-    new_heading = get_robot_heading()
-    return new_heading
+def calibration_move():
+    drive(20,50)
 
 
 def pick_up_ball():
     small_motor.run(-400)
+
+
+def set_calibration_variable(new_calibration_variable):
+    global calibration_variable
+    calibration_variable = new_calibration_variable
 
 
 # Stop the robot
