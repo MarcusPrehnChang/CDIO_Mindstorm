@@ -3,6 +3,7 @@ import math
 import cv2
 import numpy as np
 
+import pathFinder
 from Translator import GridTranslator
 from pathFinder import find_path_to_multiple
 
@@ -51,7 +52,7 @@ def find_highprio(frame, min_radius=5, max_radius=20):
                 highprio.append(contour)
 
 
-def find_ball(frame, min_radius=5, max_radius=20):
+def find_ball(frame, min_radius=4, max_radius=20):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
@@ -187,9 +188,9 @@ def find_walls(frame):
 
 def find_triangle(
         frame,
-        area_size=250,
-        lower_green=np.array([100, 130, 85]),
-        upper_green=np.array([130, 160, 105])
+        area_size=1000,
+        lower_green=np.array([130, 160, 100]),
+        upper_green=np.array([160, 170, 140])
 ):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     mask = cv2.inRange(frame, lower_green, upper_green)
@@ -214,18 +215,18 @@ def find_triangle(
 
 def find_abc(points):
     # Init the points to x and y
-    x1, y1 = points[0][0]
-    x2, y2 = points[1][0]
-    x3, y3 = points[2][0]
+    y1, x1 = points[0][0]
+    y2, x2 = points[1][0]
+    y3, x3 = points[2][0]
 
     # Calculate the distance between points using the Afstandsformlen
     length1 = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     length2 = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
     length3 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
 
-    # print("length1: " + length1.__str__())
-    # print("length2: " + length2.__str__())
-    # print("length3: " + length3.__str__())
+    print("length1: " + length1.__str__())
+    print("length2: " + length2.__str__())
+    print("length3: " + length3.__str__())
 
     # Determine which point is C (the return is in this order A, B, C)
     if math.isclose(length1, length2, abs_tol=10):
@@ -241,29 +242,34 @@ def find_abc(points):
         return None, None, None
 
 
-def get_orientation(points):
+def get_orientation(frame, points):
     # Find A,B and C points
-    A, B, C = find_abc(points)
+    try:
+        A, B, C = find_abc(points)
 
-    # Init the points to x and y
-    x1, y1 = A
-    x2, y2 = B
-    x3, y3 = C
+        # Init the points to x and y
+        y1, x1 = A
+        y2, x2 = B
+        y3, x3 = C
+        print(x1, y1, x2, y2, x3, y3)
 
-    # Calculate the point between A and B
-    Mx = (x2 + x1) / 2
-    My = (y2 + y1) / 2
+        # Calculate the point between A and B
+        Mx = (x2 + x1) / 2
+        My = (y2 + y1) / 2
 
-    # print("Mx:", Mx)
-    # print("My:", My)
+        # print("Mx:", Mx)
+        # print("My:", My)
 
-    # print("x3:", x3)
-    # print("y3:", y3)
+        # print("x3:", x3)
+        # print("y3:", y3)
 
-    # Calculate the vector (direction the robot is going)
-    # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
-    V = [x3 - Mx, (y3 - My) * -1]
-    return V
+        # Calculate the vector (direction the robot is going)
+        # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
+        V = [(My - y3) * -1, Mx - x3]
+        return V
+    except:
+        print("increasing sensitivity")
+        return inc_sen_triangle(frame)
 
 
 def get_array():
@@ -292,14 +298,15 @@ def inc_sen_triangle(frame):
     for i in range(10):
         global robot_identifier
         robot_identifier = []
-        find_triangle(
+        new_frame, points = find_triangle(
             frame,
             area_size=(1400 - (i * 10)),
-            lower_green=np.array([100 - (i * 5), 130 - (i * 5), 85 - (i * 5)]),
-            upper_green=np.array([130 + (i * 5), 160 + (i * 5), 105 + (i * 5)])
+            lower_green=np.array([130 - (i * 5), 160 - (i * 5), 100 - (i * 5)]),
+            upper_green=np.array([160 + (i * 5), 170 + (i * 5), 140 + (i * 5)])
         )
         if bool(robot_identifier):
             print("Triangle Found in: " + str(i))
+            return get_orientation(frame, points)
             break
 
 
@@ -335,7 +342,7 @@ def print_grid(grid):
 def get_info_from_camera():
     balls = []
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/real_map.jpg'), (1280, 720))
+    input_image = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1280, 720))
 
     newFrame, points = find_triangle(input_image)
     if points is not None:
@@ -358,42 +365,38 @@ def get_info_from_camera():
     print("work?", vectors)
     vectorlist = grid_translator.make_vectors(vectors)
 
-    # drawn_frame, points = find_triangle(input_image)
-    # robot_heading = get_orientation(points)
-    robot_heading = [-1, 0]
+    drawn_frame, points = find_triangle(input_image)
+    robot_heading = get_orientation(points)
+
     return vectorlist, robot_heading
-    # Video Capture
 
-    """
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
+def test():
+    #frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
 
-    print("vidcap")
-    if not cap.isOpened():
-        print("Cannot open camera")
-        exit()
+    frame = cv2.imread('images/Triangletest2.jpg')
 
-    while True:
-        print("in while")
-        ret, frame = cap.read()
+    new_frame, points = find_triangle(frame)
+    vec = get_orientation(frame, points)
+    print("Vector:" + str(vec))
 
-        if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
-            break
-
-        frame = find_ball(frame)
-
-        # Display the resulting frame
-        cv2.imshow('frame', frame)
-        if cv2.waitKey(1) == ord('q'):
-            break
-
-    cap.release()
+    pik = detect_Objects(frame)
+    grid_translator = GridTranslator(arr)
+    grid_translator.translate()
+    translated_goals, translated_high, translated_start = grid_translator.get_info()
+    object_size = (2, 2)
+    path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
+    print("Path:", path)
+    vectors = grid_translator.make_list_of_lists(path)
+    print("work?", vectors)
+    vectorlist = grid_translator.make_vectors(vectors)
+    print("vectors", vectorlist)
+    cv2.imshow('frame', new_frame)
+    cv2.waitKey(0)
     cv2.destroyAllWindows()
-    """
 
 
-def main():
+
+    '''
     # Choosing the first cam
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
@@ -428,5 +431,6 @@ def main():
         pass
     cap.release()
     cv2.destroyAllWindows()
+    '''
 
-main()
+#test

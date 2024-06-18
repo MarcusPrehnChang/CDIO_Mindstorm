@@ -9,7 +9,7 @@ stop_flag = False
 def run_server():
     global robot
     # Get hostname and port
-    host = "192.168.23.184"
+    host = "192.168.98.124"
     port = 5000
 
     # Get the instance of socket and start listening on host and port.
