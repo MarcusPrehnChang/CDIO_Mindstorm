@@ -412,34 +412,3 @@ def test():
     cv2.destroyAllWindows()
 
 
-
-    '''
-    # Choosing the first cam
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
-
-    print("vidcap")
-    if not cap.isOpened():
-        print("Cannot open camera")
-        exit()
-
-    while True:
-        print("in while")
-        ret, frame = cap.read()
-
-        if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
-            break
-
-        frame = find_ball(frame)
-
-        # Display the resulting frame
-        cv2.imshow('frame', frame)
-        if cv2.waitKey(1) == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-    """
-
-
