@@ -21,7 +21,11 @@ small_motor = Motor(Port.B)
 robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=110)
 # robot.settings(straight_speed=200, straight_acceleration=100, turn_rate=100)
 
+
 gyro_sensor = GyroSensor(Port.S1)
+
+square_size = 20
+calibration_variable = 1
 
 
 # angle = degrees to turn, speed = mm/s
@@ -105,8 +109,26 @@ def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
             #break
 
 
+def calculate_square_size(amount_of_squares_length, amount_of_squares_width):
+    length_size = 180
+    width_size = 120
+    square_size_length = length_size / amount_of_squares_length
+    square_size_width = width_size / amount_of_squares_width
+    square_size = (square_size_length + square_size_width) / 2
+
+    return square_size
+
+
+def calibration_move(former_heading, new_heading):
+    former_heading = get_robot_heading()
+    drive(2000,300)
+    new_heading = get_robot_heading()
+    return new_heading
+
+
 def pick_up_ball():
     small_motor.run(-400)
+
 
 # Stop the robot
 robot.stop()

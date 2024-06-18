@@ -18,6 +18,9 @@ highprio = []
 gooseEgg = []
 number_of_minimum_balls = 11
 robot_identifier = []
+pixel_cell_width = 0
+cell_width = 0
+cell_height = 0
 
 def detect_Objects(frame):
     find_ball(frame)
@@ -94,8 +97,12 @@ def robot_builder(robot_size):
 
     return robot_grid_height, robot_grid_width
 
+
 def map_objects(box_dimensions, output_image):
     x, y, w, h = box_dimensions
+    global cell_width, cell_height
+    global pixel_cell_width
+    pixel_cell_width = w
     cell_width = w // columns
     cell_height = h // rows
 
@@ -187,6 +194,7 @@ def find_walls(frame):
             walls.append(contour)
     return cv2.boundingRect(largest_contour)
 
+
 def find_triangle(frame, area_size=600):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     cv2.imshow("test1", frame)
@@ -194,7 +202,6 @@ def find_triangle(frame, area_size=600):
     lower_green = np.array([75, 110, 65])
     upper_green = np.array([135, 165, 110])
     mask = cv2.inRange(frame, lower_green, upper_green)
-    print("pik")
     cv2.imshow("test", mask)
     cv2.waitKey(0)
     cv2.destroyAllWindows
