@@ -75,11 +75,11 @@ def navigate_to_ball(vector_list, square_size, robot_heading):
         #if stop_flag:
             #break
         # Turn the robot to the correct angle
-        turn(angle_to_turn, 200)
+        turn(angle_to_turn, 50)
         #if stop_flag:
             #break
         # Drive the robot to the target distance
-        drive(distance_to_drive, 200)
+        drive(distance_to_drive, 50)
 
         # Update the robot's position
         robot_heading = vector
@@ -96,8 +96,10 @@ def get_angle_to_turn(robot_heading, pointer_vector):
     vector_product = robot_heading[0] * pointer_vector[0] + robot_heading[1] * pointer_vector[1]
     angle_to_turn_radian = math.acos(vector_product / (robot_heading_distance * pointer_vector_distance))
     angle_to_turn = math.degrees(angle_to_turn_radian)
-    if robot_heading[0] * pointer_vector[1] - robot_heading[1] * pointer_vector[0] < 0:
+
+    if robot_heading[0] * pointer_vector[1] - robot_heading[1] * pointer_vector[0] > 0:
         angle_to_turn = -angle_to_turn
+
     return angle_to_turn
 
 
@@ -125,6 +127,8 @@ def calibration_move():
 
 def pick_up_ball():
     small_motor.run(-400)
+    wait(100)
+
 
 
 def set_calibration_variable(new_calibration_variable):
