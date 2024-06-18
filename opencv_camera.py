@@ -307,9 +307,8 @@ def print_grid(grid):
 
 
 def take_picture():
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
     ret, frame = cap.read()
-    cap.release()
 
     return frame
 
