@@ -191,8 +191,8 @@ def find_walls(frame):
 def find_triangle(
         frame,
         area_size=1000,
-        lower_green=np.array([130, 160, 100]),
-        upper_green=np.array([160, 170, 140])
+        lower_green=np.array([105, 110, 85]),
+        upper_green=np.array([140, 145, 110])
 ):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     mask = cv2.inRange(frame, lower_green, upper_green)
@@ -267,7 +267,7 @@ def get_orientation(frame, points):
 
         # Calculate the vector (direction the robot is going)
         # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
-        V = [(My - y3) * -1, Mx - x3]
+        V = [float(Mx - x3), float((My - y3) * -1)]
         return V
     except:
         print("increasing sensitivity")
@@ -303,8 +303,8 @@ def inc_sen_triangle(frame):
         new_frame, points = find_triangle(
             frame,
             area_size=(1400 - (i * 10)),
-            lower_green=np.array([130 - (i * 5), 160 - (i * 5), 100 - (i * 5)]),
-            upper_green=np.array([160 + (i * 5), 170 + (i * 5), 140 + (i * 5)])
+            lower_green=np.array([105 - (i * 5), 110 - (i * 5), 85 - (i * 5)]),
+            upper_green=np.array([140 + (i * 5), 145 + (i * 5), 110 + (i * 5)])
         )
         if bool(robot_identifier):
             print("Triangle Found in: " + str(i))
@@ -344,11 +344,11 @@ def print_grid(grid):
 def get_info_from_camera():
     balls = []
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1280, 720))
+    input_image = cv2.imread('images/thisistheone.jpg')
 
     newFrame, points = find_triangle(input_image)
     if points is not None:
-        vec = get_orientation(points)
+        vec = get_orientation(input_image, points)
     else:
         print("error finding triangle")
     print(points)
@@ -372,7 +372,7 @@ def get_info_from_camera():
 def test():
     #frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
 
-    frame = cv2.imread('images/Triangletest2.jpg')
+    frame = cv2.imread('images/thisistheone.jpg')
 
     new_frame, points = find_triangle(frame)
     vec = get_orientation(frame, points)
@@ -432,4 +432,4 @@ def test():
     cv2.destroyAllWindows()
     '''
 
-#test
+#test()
