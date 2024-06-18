@@ -71,11 +71,11 @@ def navigate_to_ball(vector_list, square_size, robot_heading):
         #if stop_flag:
             #break
         # Turn the robot to the correct angle
-        # turn(angle_to_turn, 50)
+        turn(angle_to_turn, 50)
         #if stop_flag:
             #break
         # Drive the robot to the target distance
-        # drive(distance_to_drive, 50)
+        drive(distance_to_drive, 50)
 
         # Update the robot's position
         robot_heading = vector
@@ -109,8 +109,8 @@ def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
 
 def pick_up_ball():
     small_motor.run(-400)
+    wait(100)
 
-navigate_to_ball([[0, 1], [1, 0], [0, 1], [0, 1], [1, 0], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [1, 0], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1]], 20, [-9.068222045898438, 74.49984741210938])
 
 # Stop the robot
 robot.stop()

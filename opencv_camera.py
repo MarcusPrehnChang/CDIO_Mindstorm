@@ -106,6 +106,7 @@ def map_objects(box_dimensions, output_image):
     counter = 0
     mask = np.zeros((h, w), dtype=np.uint8)
     cv2.imshow('cockus minimus', output_image)
+    print("inside the map", robot_identifier)
 
     for wall in walls:
         cv2.drawContours(mask, [wall], -1, 255, thickness=cv2.FILLED, offset=(-x, -y))
@@ -116,6 +117,7 @@ def map_objects(box_dimensions, output_image):
     for ball in gooseEgg:
         cv2.drawContours(mask, [ball], -1, 20, thickness=cv2.FILLED, offset=(-x, -y))
     for robot in robot_identifier:
+        print("drawing shit in the for")
         cv2.drawContours(mask, [robot], -1, 75, thickness=cv2.FILLED, offset=(-x, -y))
     robot_size = 0
 
@@ -132,7 +134,6 @@ def map_objects(box_dimensions, output_image):
     cv2.imshow('cockus pikus', mask)
 
     cv2.waitKey(0)
-    cv2.destroyAllWindows
     for row in range(rows):
         for col in range(columns):
             cell_x_start = col * cell_width
@@ -191,7 +192,7 @@ def find_walls(frame):
 def find_triangle(
         frame,
         area_size=1000,
-        lower_green=np.array([105, 110, 85]),
+        lower_green=np.array([95, 100, 75]),
         upper_green=np.array([140, 145, 110])
 ):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
@@ -246,32 +247,32 @@ def find_abc(points):
 
 def get_orientation(frame, points):
     # Find A,B and C points
-    try:
-        A, B, C = find_abc(points)
+    #try:
+    A, B, C = find_abc(points)
 
-        # Init the points to x and y
-        y1, x1 = A
-        y2, x2 = B
-        y3, x3 = C
-        print(x1, y1, x2, y2, x3, y3)
+    # Init the points to x and y
+    y1, x1 = A
+    y2, x2 = B
+    y3, x3 = C
+    print(x1, y1, x2, y2, x3, y3)
 
-        # Calculate the point between A and B
-        Mx = (x2 + x1) / 2
-        My = (y2 + y1) / 2
+    # Calculate the point between A and B
+    Mx = (x2 + x1) / 2
+    My = (y2 + y1) / 2
 
-        # print("Mx:", Mx)
-        # print("My:", My)
+    # print("Mx:", Mx)
+    # print("My:", My)
 
-        # print("x3:", x3)
-        # print("y3:", y3)
+    # print("x3:", x3)
+    # print("y3:", y3)
 
-        # Calculate the vector (direction the robot is going)
-        # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
-        V = [float(Mx - x3), float((My - y3) * -1)]
-        return V
-    except:
-        print("increasing sensitivity")
-        return inc_sen_triangle(frame)
+    # Calculate the vector (direction the robot is going)
+    # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
+    V = [float(Mx - x3), float((My - y3) * -1)]
+    return V
+    #except:
+    #    print("increasing sensitivity")
+    #    return inc_sen_triangle(frame)
 
 
 def get_array():
@@ -295,6 +296,7 @@ def isValidColorWall(R, G, B):
     return R < 190 and G > 10 and B > 25
 
 
+'''
 # Increases the search for the triangle by increasing the sensitivity over 10 iterations.
 def inc_sen_triangle(frame):
     for i in range(10):
@@ -310,7 +312,7 @@ def inc_sen_triangle(frame):
             print("Triangle Found in: " + str(i))
             return get_orientation(frame, points)
             break
-
+'''
 
 # Increases the search for the balls by increasing the sensitivity over 10 iterations.
 def inc_sen_balls(frame):
@@ -347,13 +349,12 @@ def get_info_from_camera():
     input_image = cv2.imread('images/thisistheone.jpg')
 
     newFrame, points = find_triangle(input_image)
-    print("rbot", robot_identifier)
     if points is not None:
         vec = get_orientation(input_image, points)
     else:
         print("error finding triangle")
     print(points)
-
+    #print("rbot", robot_identifier)
     if input_image is None:
         print("Error: Could not open or read the image")
         return
@@ -378,8 +379,8 @@ def test():
     new_frame, points = find_triangle(frame)
     vec = get_orientation(frame, points)
     print("Vector:" + str(vec))
+    print(robot_identifier)
 
-    pik = detect_Objects(frame)
     grid_translator = GridTranslator(arr)
     grid_translator.translate()
     translated_goals, translated_high, translated_start = grid_translator.get_info()
