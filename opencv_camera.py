@@ -191,8 +191,8 @@ def find_triangle(frame, area_size=600):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     cv2.imshow("test1", frame)
     cv2.waitKey(0)
-    lower_green = np.array([100, 130, 85])
-    upper_green = np.array([130, 160, 105])
+    lower_green = np.array([75, 110, 65])
+    upper_green = np.array([135, 165, 110])
     mask = cv2.inRange(frame, lower_green, upper_green)
     print("pik")
     cv2.imshow("test", mask)
@@ -266,7 +266,7 @@ def get_orientation(points):
 
     # Calculate the vector (direction the robot is going)
     # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
-    V = [x3 - Mx, (y3 - My) * -1]
+    V = [x3 - Mx, y3 - My]
     return V
 
 
@@ -304,9 +304,9 @@ def get_info_from_camera():
 
     newFrame, points = find_triangle(input_image)
     if points is not None:
-        pass
-        #vec = get_orientation(points)
-
+        vec = get_orientation(points)
+    else:
+        print("error finding shitty bitch triangle")
     print(points)
 
     if input_image is None:
@@ -322,11 +322,7 @@ def get_info_from_camera():
     vectors = grid_translator.make_list_of_lists(path)
     print("work?", vectors)
     vectorlist = grid_translator.make_vectors(vectors)
-
-    #drawn_frame, points = find_triangle(input_image)
-    #robot_heading = get_orientation(points)
-    robot_heading = [-1,0]
-    return vectorlist, robot_heading
+    return vectorlist, vec
     # Video Capture
 
     """
