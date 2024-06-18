@@ -92,7 +92,7 @@ def get_angle_to_turn(robot_heading, pointer_vector):
     vector_product = robot_heading[0] * pointer_vector[0] + robot_heading[1] * pointer_vector[1]
     angle_to_turn_radian = math.acos(vector_product / (robot_heading_distance * pointer_vector_distance))
     angle_to_turn = math.degrees(angle_to_turn_radian)
-    if robot_heading[0] * pointer_vector[1] - robot_heading[1] * pointer_vector[0] > 0:
+    if robot_heading[0] * pointer_vector[1] - robot_heading[1] * pointer_vector[0] < 0:
         angle_to_turn = -angle_to_turn
     return angle_to_turn
 
@@ -107,7 +107,6 @@ def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
 
 def pick_up_ball():
     small_motor.run(-400)
-    wait(10000)
 
 # Stop the robot
 robot.stop()

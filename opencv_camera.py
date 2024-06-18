@@ -59,6 +59,7 @@ def find_ball(frame, min_radius=4, max_radius=20):
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     find_highprio(frame)
 
+
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
@@ -82,6 +83,7 @@ def find_ball(frame, min_radius=4, max_radius=20):
                 cv2.circle(frame, center, radius, (255, 0, 0), 2)
                 gooseEgg.append(contour)
 
+    
     return balls, highprio
 
 
@@ -346,9 +348,9 @@ def get_info_from_camera():
 
     newFrame, points = find_triangle(input_image)
     if points is not None:
-        pass
-        # vec = get_orientation(points)
-
+        vec = get_orientation(points)
+    else:
+        print("error finding triangle")
     print(points)
 
     if input_image is None:
@@ -364,11 +366,8 @@ def get_info_from_camera():
     vectors = grid_translator.make_list_of_lists(path)
     print("work?", vectors)
     vectorlist = grid_translator.make_vectors(vectors)
+    return vectorlist, vec
 
-    drawn_frame, points = find_triangle(input_image)
-    robot_heading = get_orientation(points)
-
-    return vectorlist, robot_heading
 
 def test():
     #frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
