@@ -2,26 +2,26 @@
 import math
 # from client import stop_flag
 
-#from pybricks.hubs import EV3Brick
-#from pybricks.ev3devices import Motor, GyroSensor
-#from pybricks.parameters import Port
-#from pybricks.robotics import DriveBase
-#from pybricks.tools import wait
+from pybricks.hubs import EV3Brick
+from pybricks.ev3devices import Motor, GyroSensor
+from pybricks.parameters import Port
+from pybricks.robotics import DriveBase
+from pybricks.tools import wait
 
 # Initialize the EV3 Brick
-#ev3 = EV3Brick()
+ev3 = EV3Brick()
 
 # Initialize the motors connected to the wheels
-#left_motor = Motor(Port.A)
-#right_motor = Motor(Port.C)
-#small_motor = Motor(Port.B)
+left_motor = Motor(Port.A)
+right_motor = Motor(Port.C)
+small_motor = Motor(Port.B)
 
 # Create a DriveBase object with the initialized motors
 # Adjust the wheel diameter and axle track according to our robot design
-#robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=110)
+robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=110)
 # robot.settings(straight_speed=200, straight_acceleration=100, turn_rate=100)
 
-#gyro_sensor = GyroSensor(Port.S1)
+gyro_sensor = GyroSensor(Port.S1)
 
 
 # angle = degrees to turn, speed = mm/s
