@@ -187,7 +187,7 @@ def find_walls(frame):
 
 def find_triangle(
         frame,
-        area_size=1400,
+        area_size=250,
         lower_green=np.array([100, 130, 85]),
         upper_green=np.array([130, 160, 105])
 ):
@@ -394,12 +394,39 @@ def get_info_from_camera():
 
 
 def main():
-    print("Hello World")
-    frame = cv2.resize(cv2.imread('images/real_map.jpg'), (1250, 1000))
-    inc_sen_triangle(frame)
-    cv2.imshow('frame', frame),
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # Choosing the first cam
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
+    if not cap.isOpened():
+        print("Error: Can't open camera")
+        exit()
+
+    # Capture frames continuously
+    try:
+        while True:
+            # Read the frame from the camera
+            ret, frame = cap.read()
+
+            # If frame is read correctly ret is True
+            if not ret:
+                print("Error: Can't receive frame (stream end?). Exiting ...")
+                break
+
+            # Add to analyse
+
+            new_frame = find_triangle(frame)
+
+            # Display the resulting frame
+            cv2.imshow('Frame', new_frame[0])
+
+            # Press 'q' on the keyboard to exit the loop
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+    except KeyboardInterrupt:
+        # Handle any manual interruption (Ctrl+C)
+        pass
+    cap.release()
+    cv2.destroyAllWindows()
 
 main()
