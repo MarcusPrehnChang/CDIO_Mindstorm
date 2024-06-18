@@ -14,6 +14,9 @@ balls = []
 highprio = []
 gooseEgg = []
 number_of_minimum_balls = 11
+cell_width = 0
+cell_height = 0
+
 
 
 def detect_Objects(frame):
@@ -44,17 +47,18 @@ def find_ball(frame, min_radius=5, max_radius=20):
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
                 balls.append(contour)
-            elif min_radius < radius < max_radius and isHighPrioBall(r, b, g):   
+            elif min_radius < radius < max_radius and isHighPrioBall(r, b, g):
                 cv2.circle(frame, center, radius, (0,0,0), 2)
                 highprio.append(contour)
             elif radius > max_radius:
                 cv2.circle(frame, center, radius, (255,0,0), 2)
                 gooseEgg.append(contour)
 
-                
+
     return balls, highprio
 
 def map_objects(box_dimensions, output_image):
+    global cell_width, cell_height
     x, y, w, h = box_dimensions
     cell_width = w // rows
     cell_height = h // columns
@@ -86,7 +90,7 @@ def map_objects(box_dimensions, output_image):
                 arr[row][col] = 3
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 20):
                 arr[row][col] = 1
-   
+
     return output_image
 
 def find_walls(frame):
