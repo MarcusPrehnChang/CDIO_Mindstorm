@@ -57,13 +57,15 @@ def calibration(first_frame, second_frame): #first_position og second er ikke ri
 
 def run_robot_calibration():
     firstframe = opencv_camera.take_picture()
-    calibration_move()
+    calibration_move() #bare kør server.calibrate her
     secondframe = opencv_camera.take_picture()
     calibration(firstframe, secondframe, 20)
 
 
 def run_robot():
-    print("implement robot running")
+    print("implement robot running") #fortæl serveren at den skal fortælle robotten den skal køre. Lav variabler herinde,
+    # som kan sendes til robotten, så den ved hvad den skal gøre, hold på alle calibrerings ting og variabler her istedet for inde i server
+    #især billeder osv.
 
 
 def emergency_stop():

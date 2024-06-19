@@ -57,15 +57,15 @@ def startup_sequence():
         send_message(robot_heading, robot)
         message = receive_message(robot)
         if message.lower().strip() == "received":
-            iterator = 0
-            while running:
+            iterator = 0 #ryk det der er herfra, til noget der kan køres fra hsm med næste phase
+            while running: #redefiner det her så det kan stoppes
                  
                 send_message(vector_list[iterator], robot)
                 message = receive_message(robot)
-                if message.lower().strip() == "received":
+                if message.lower().strip() == "received": #error handling
                     send_message(square_size, robot)
                     message = receive_message(robot)
-                    if message.lower().strip() == "received":
+                    if message.lower().strip() == "received": #error handling
                         print("Startup sequence complete")
                         run_thread = threading.Thread(target=run_sequence)
                         emergency_stop_thread = threading.Thread(target=emergency_stop_listener)
@@ -73,16 +73,16 @@ def startup_sequence():
                         run_thread.start()
                         run_thread.join()
                 message = receive_message(robot)
-                if message.lower().strip() == "run is done":
+                if message.lower().strip() == "run is done": #error handling
                     send_message("continue", robot)
                     message = receive_message(robot)
                     if message.lower().strip() == "received":
                         running = True
                 else:
-                    running = False
+                    running = False# error handling
                 iterator += 1
-            
 
+            # ryk det der er hertil ca.
     server_socket.close()
 
 
