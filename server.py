@@ -56,18 +56,28 @@ def startup_sequence():
         send_message(robot_heading, robot)
         message = receive_message(robot)
         if message.lower().strip() == "received":
-            send_message(vector_list, robot)
-            message = receive_message(robot)
-            if message.lower().strip() == "received":
-                send_message(square_size, robot)
+            iterator = 0
+            while running:
+                 
+                send_message(vector_list[iterator], robot)
                 message = receive_message(robot)
                 if message.lower().strip() == "received":
-                    print("Startup sequence complete")
-                    run_thread = threading.Thread(target=run_sequence)
-                    emergency_stop_thread = threading.Thread(target=emergency_stop_listener)
-                    emergency_stop_thread.start()
-                    run_thread.start()
-                    run_thread.join()
+                    send_message(square_size, robot)
+                    message = receive_message(robot)
+                    if message.lower().strip() == "received":
+                        print("Startup sequence complete")
+                        run_thread = threading.Thread(target=run_sequence)
+                        emergency_stop_thread = threading.Thread(target=emergency_stop_listener)
+                        emergency_stop_thread.start()
+                        run_thread.start()
+                        run_thread.join()
+                message = receive_message(robot)
+                if message.lower().strip() == "ready":
+                    pass
+                else:
+                    running = False
+                iterator += 1
+            
 
     server_socket.close()
 
