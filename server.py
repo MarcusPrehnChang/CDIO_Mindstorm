@@ -98,12 +98,13 @@ def emergency_stop():
 
 
 def run_calibration_sequence(robot):
+    send_message("calibration phase", robot)
     message = receive_message(robot)
     if (message.lower().strip() == "calibrate ready"):
         firstframe = opencv_camera.take_picture()
         send_message("calibration move", robot)
         message = receive_message(robot)
-        if (message.lower().strip() == "calibration done"):
+        if (message.lower().strip() == "calibration move done"):
             secondframe = opencv_camera.take_picture()
             calibration_difference = HSM.calibration(firstframe, secondframe)
             print(calibration_difference)

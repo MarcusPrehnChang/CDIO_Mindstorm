@@ -57,18 +57,15 @@ def listen_for_emergency_stop(client_socket):
 
 def phase_switcher(client_socket):
     received_message = receive_message(client_socket)
-    if received_message.lower().strip() == "startup phase":
-        pass
-    elif received_message.lower().strip() == "calibration phase":
-        pass
+    if received_message.lower().strip() == "calibration phase":
+        run_calibration(client_socket)
     elif received_message.lower().strip() == "robot phase":
-        pass
+        run_loop_sequence(client_socket)
     elif received_message.lower().strip() == "emergency phase":
         pass
 
 
 def startup_sequence(hostname):
-
     # Connect to the server
     client_socket = connect_to_server(hostname)
     # Send ready message
@@ -76,12 +73,13 @@ def startup_sequence(hostname):
     message = receive_message(client_socket)
 
     if message.lower().strip() == "ready":
-        run_calibration(client_socket)
+        return client_socket
+    else:
+        return client_socket
 
-    return client_socket
 
-
-def run_sequence(client_socket):
+def run_loop_sequence(client_socket):
+    global run_is_not_done
     robot_heading, vector_list, square_size = get_info(client_socket)
     while run_is_not_done:
         message = receive_message(client_socket)
@@ -132,7 +130,7 @@ def run_calibration(client_socket):
     message = receive_message(client_socket)
     if message.lower().strip() == "calibration move":
         autodrive.calibration_move()
-        send_message("calibration done", client_socket)
+        send_message("calibration move done", client_socket)
         message = receive_message(client_socket)
         if message.lower().strip() == "calibration done":
             calibration_difference = receive_message(client_socket)
@@ -141,7 +139,8 @@ def run_calibration(client_socket):
 
 # Run the client
 def run_client():
-    startup_sequence("192.168.98.209")
+    client_socket = startup_sequence("192.168.98.209")
+    phase_switcher(client_socket)
     # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
     # startup_thread.start()
     # startup_thread.join()
