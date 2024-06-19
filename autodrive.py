@@ -84,6 +84,8 @@ def navigate_to_ball(vector_list, square_size, robot_heading):
         # Update the robot's position
         robot_heading = vector
 
+    return robot_heading
+
 
 def get_distance_to_drive(vector, square_size):
     distance_to_drive = math.sqrt(vector[0] ** 2 + vector[1] ** 2) * square_size
@@ -106,9 +108,10 @@ def get_angle_to_turn(robot_heading, pointer_vector):
 def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
     for list_of_vectors in list_of_list_of_vectors:
         pick_up_ball()
-        navigate_to_ball(list_of_vectors, square_size, robot_heading)
+        new_heading = navigate_to_ball(list_of_vectors, square_size, robot_heading)
         #if stop_flag:
             #break
+    return new_heading
 
 
 def calculate_square_size(amount_of_squares_length, amount_of_squares_width):

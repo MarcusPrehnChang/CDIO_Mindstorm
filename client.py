@@ -69,9 +69,13 @@ def startup_sequence(hostname):
 
     if message.lower().strip() == "ready":
         run_calibration(client_socket)
+        robot_heading, vector_list, square_size = get_info(client_socket)
         while run_is_not_done:
-            robot_heading, vector_list, square_size = get_info(client_socket)
-
+            message = receive_message(client_socket)
+            vector_list = eval(message)
+            send_message("received", client_socket)
+            message = receive_message(client_socket)
+            square_size = int(message)
             # Start the listen_for_emergency_stop thread
             # listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
             # Start the autodrive thread
@@ -82,7 +86,7 @@ def startup_sequence(hostname):
             # Wait for the autodrive thread to finish
             # autodrive_thread.join()
             # Stop the listen_for_emergency_stop thread to receive new messages
-            auto_drive(vector_list, square_size, robot_heading)
+            robot_heading = auto_drive(vector_list, square_size, robot_heading)
             emergency_stop_listener = False
 
             send_message("run is done", client_socket)

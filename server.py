@@ -42,6 +42,7 @@ def receive_message(conn):
 def startup_sequence():
     global robot
     global stop_flag
+    running = True
     # Run the server and get necessary information
     robot, address, server_socket = run_server()
 
@@ -72,8 +73,11 @@ def startup_sequence():
                         run_thread.start()
                         run_thread.join()
                 message = receive_message(robot)
-                if message.lower().strip() == "ready":
-                    pass
+                if message.lower().strip() == "run is done":
+                    send_message("continue", robot)
+                    message = receive_message(robot)
+                    if message.lower().strip() == "received":
+                        running = True
                 else:
                     running = False
                 iterator += 1
