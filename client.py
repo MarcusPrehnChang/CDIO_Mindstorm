@@ -55,11 +55,19 @@ def listen_for_emergency_stop(client_socket):
                 #autodrive_thread.start()
 
 
+def phase_switcher(client_socket):
+    received_message = receive_message(client_socket)
+    if received_message.lower().strip() == "startup phase":
+        pass
+    elif received_message.lower().strip() == "calibration phase":
+        pass
+    elif received_message.lower().strip() == "robot phase":
+        pass
+    elif received_message.lower().strip() == "emergency phase":
+        pass
+
+
 def startup_sequence(hostname):
-    global autodrive_thread
-    global emergency_stop_listener
-    global run_is_not_done
-    global stop_flag
 
     # Connect to the server
     client_socket = connect_to_server(hostname)
@@ -69,38 +77,41 @@ def startup_sequence(hostname):
 
     if message.lower().strip() == "ready":
         run_calibration(client_socket)
-        robot_heading, vector_list, square_size = get_info(client_socket)
-        while run_is_not_done:
-            message = receive_message(client_socket)
-            vector_list = eval(message)
+
+    return client_socket
+
+
+def run_sequence(client_socket):
+    robot_heading, vector_list, square_size = get_info(client_socket)
+    while run_is_not_done:
+        message = receive_message(client_socket)
+        vector_list = eval(message)
+        send_message("received", client_socket)
+        message = receive_message(client_socket)
+        square_size = int(message)
+        # Start the listen_for_emergency_stop thread
+        # listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
+        # Start the autodrive thread
+        # autodrive_thread = threading.Thread(target=autodrive.auto_drive, args=(vector_list, square_size, robot_heading,))
+        # listen_thread.start()
+        # autodrive_thread.start()
+
+        # Wait for the autodrive thread to finish
+        # autodrive_thread.join()
+        # Stop the listen_for_emergency_stop thread to receive new messages
+        robot_heading = auto_drive(vector_list, square_size, robot_heading)
+        emergency_stop_listener = False
+
+        send_message("run is done", client_socket)
+        continuation_message = receive_message(client_socket)
+        if continuation_message == "run is done":
             send_message("received", client_socket)
-            message = receive_message(client_socket)
-            square_size = int(message)
-            # Start the listen_for_emergency_stop thread
-            # listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
-            # Start the autodrive thread
-            # autodrive_thread = threading.Thread(target=autodrive.auto_drive, args=(vector_list, square_size, robot_heading,))
-            # listen_thread.start()
-            # autodrive_thread.start()
+            run_is_not_done = False
 
-            # Wait for the autodrive thread to finish
-            # autodrive_thread.join()
-            # Stop the listen_for_emergency_stop thread to receive new messages
-            robot_heading = auto_drive(vector_list, square_size, robot_heading)
-            emergency_stop_listener = False
-
-            send_message("run is done", client_socket)
-            continuation_message = receive_message(client_socket)
-            if continuation_message == "run is done":
-                send_message("received", client_socket)
-                run_is_not_done = False
-
-            if continuation_message == "continue":
-                send_message("received", client_socket)
-                # Reset the emergency stop listener
-                stop_flag = False
-
-    client_socket.close()
+        if continuation_message == "continue":
+            send_message("received", client_socket)
+            # Reset the emergency stop listener
+            stop_flag = False
 
 
 # Get the robot heading, vector list, and square size
@@ -126,6 +137,7 @@ def run_calibration(client_socket):
         if message.lower().strip() == "calibration done":
             calibration_difference = receive_message(client_socket)
             autodrive.set_calibration_variable(float(calibration_difference))
+
 
 # Run the client
 def run_client():

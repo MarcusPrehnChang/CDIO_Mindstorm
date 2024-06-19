@@ -133,7 +133,6 @@ def pick_up_ball():
     wait(100)
 
 
-
 def set_calibration_variable(new_calibration_variable):
     global calibration_variable
     calibration_variable = new_calibration_variable
