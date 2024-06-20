@@ -359,6 +359,7 @@ def take_picture():
 
     return frame
 
+
 def get_info_from_camera():
     balls = []
     # Image Capture

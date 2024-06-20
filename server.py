@@ -5,12 +5,10 @@ import HSM
 import opencv_camera
 from opencv_camera import get_info_from_camera as get_inf
 
-robot = None
 stop_flag = False
 
 
 def run_server():
-    global robot
     # Get hostname and port
     host = "192.168.98.209"
     port = 5000
@@ -40,9 +38,6 @@ def receive_message(conn):
 
 
 def startup_sequence():
-    global robot
-    global stop_flag
-    running = True
     # Run the server and get necessary information
     robot, address, server_socket = run_server()
 
@@ -52,43 +47,32 @@ def startup_sequence():
     # If the message is "ready", send the necessary information to the robot
     if message.lower().strip() == "ready":
         send_message("ready", robot)
-        run_calibration_sequence(robot)
-        robot_heading, vector_list, square_size = get_drive_info()
-        send_message(robot_heading, robot)
+        return robot, server_socket
+    else:
+        send_message("ready", robot)
+        return robot, server_socket
+
+
+def start_of_run_sequence(robot_heading, vector_list, square_size):
+    send_message(robot_heading, robot)
+    message = receive_message(robot)
+    if message.lower().strip() == "received":
+        send_message(vector_list, robot)
         message = receive_message(robot)
         if message.lower().strip() == "received":
-            iterator = 0 #ryk det der er herfra, til noget der kan køres fra hsm med næste phase
-            while running: #redefiner det her så det kan stoppes
-                 
-                send_message(vector_list[iterator], robot)
-                message = receive_message(robot)
-                if message.lower().strip() == "received": #error handling
-                    send_message(square_size, robot)
-                    message = receive_message(robot)
-                    if message.lower().strip() == "received": #error handling
-                        print("Startup sequence complete")
-                        run_thread = threading.Thread(target=run_sequence)
-                        emergency_stop_thread = threading.Thread(target=emergency_stop_listener)
-                        emergency_stop_thread.start()
-                        run_thread.start()
-                        run_thread.join()
-                message = receive_message(robot)
-                if message.lower().strip() == "run is done": #error handling
-                    send_message("continue", robot)
-                    message = receive_message(robot)
-                    if message.lower().strip() == "received":
-                        running = True
-                else:
-                    running = False# error handling
-                iterator += 1
-
-            # ryk det der er hertil ca.
-    server_socket.close()
+            send_message(square_size, robot)
+            message = receive_message(robot)
 
 
-# run_sequence() needs to be implemented
-def run_sequence():
-    pass
+def run_sequence(vector_list, square_size):
+    send_message(vector_list, robot)
+    message = receive_message(robot)
+    if message.lower().strip() == "received":
+        send_message(square_size, robot)
+        message = receive_message(robot)
+        if message.lower().strip() == "run is done":  # error handling
+            send_message("continue", robot)
+            message = receive_message(robot)
 
 
 # send emergency stop message to robot to make it stop
@@ -101,15 +85,12 @@ def run_calibration_sequence(robot):
     send_message("calibration phase", robot)
     message = receive_message(robot)
     if (message.lower().strip() == "calibrate ready"):
-        firstframe = opencv_camera.take_picture()
+        first_frame = opencv_camera.take_picture()
         send_message("calibration move", robot)
         message = receive_message(robot)
         if (message.lower().strip() == "calibration move done"):
-            secondframe = opencv_camera.take_picture()
-            calibration_difference = HSM.calibration(firstframe, secondframe)
-            print(calibration_difference)
-            send_message("calibration done", robot)
-            send_message(str(calibration_difference), robot)
+            second_frame = opencv_camera.take_picture()
+            return first_frame, second_frame
 
 
 def emergency_stop_listener():
@@ -121,21 +102,3 @@ def emergency_stop_listener():
             break
 
 
-# get_drive_info() needs to be implemented
-def get_drive_info():
-    vector_list, robot_heading = get_inf()
-    robot_heading = str(robot_heading)  # needs to receive from function
-    vector_list = vector_list[0] # needs to receive from function
-    vector_list = [vector_list]
-    vector_list = str(vector_list)
-    square_size = str(20)  # needs to receive from function
-
-    return robot_heading, vector_list, square_size
-
-
-def start_server():
-    server_thread = threading.Thread(target=startup_sequence)
-    server_thread.start()
-
-
-start_server()
