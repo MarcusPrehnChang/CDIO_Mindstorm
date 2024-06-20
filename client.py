@@ -69,6 +69,7 @@ def startup_sequence(hostname):
 
     if message.lower().strip() == "ready":
         run_calibration(client_socket)
+        run_calibration(client_socket)
         robot_heading, vector_list, square_size = get_info(client_socket)
         while run_is_not_done:
             message = receive_message(client_socket)
@@ -129,7 +130,7 @@ def run_calibration(client_socket):
 
 # Run the client
 def run_client():
-    startup_sequence("192.168.98.124")
+    startup_sequence("192.168.98.209")
     # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
     # startup_thread.start()
     # startup_thread.join()

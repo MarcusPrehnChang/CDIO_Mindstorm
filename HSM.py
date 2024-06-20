@@ -44,8 +44,13 @@ def calibration(first_frame, second_frame): #first_position og second er ikke ri
     second_triangle, second_points = opencv_camera.find_triangle(second_frame)
     a2, b2, second_tip_of_tri = opencv_camera.find_abc(second_points)
     #giver mig andet punkt C i spidsen af trekanten
+    first_cords = first_tip_of_tri[0] - first_tip_of_tri[1]
+    print('first coord', first_cords)
 
-    calibration_difference = cell_width / ((first_tip_of_tri[0] - first_tip_of_tri[1]) - (second_tip_of_tri[0] - second_tip_of_tri[1]))
+    second_cords = second_tip_of_tri[0] - second_tip_of_tri[1]
+    print('second coord', second_cords)
+    print(cell_width)
+    calibration_difference = cell_width / (first_cords - second_cords)
     abs(calibration_difference)
     print(calibration_difference)
     return calibration_difference

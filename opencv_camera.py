@@ -202,14 +202,15 @@ def find_walls(frame):
 
 def find_triangle(
         frame,
-        area_size=1000,
-        lower_green=np.array([95, 100, 75]),
-        upper_green=np.array([140, 145, 110])
+        area_size=400,
+        lower_green=np.array([75, 80, 50]),
+        upper_green=np.array([140, 175, 100])
 ):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     mask = cv2.inRange(frame, lower_green, upper_green)
     points = []
-
+    cv2.imshow("masked triangle", mask)
+    cv2.waitKey(0)
     # Finding based on shape
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -362,7 +363,7 @@ def take_picture():
 def get_info_from_camera():
     balls = []
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/real_map.jpg'), (1280,720))
+    input_image = cv2.resize(cv2.imread('images/map.jpg'), (1280,720))
 
     newFrame, points = find_triangle(input_image)
     if points is not None:
@@ -410,5 +411,3 @@ def test():
     cv2.imshow('frame', new_frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-
