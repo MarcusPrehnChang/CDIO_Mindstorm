@@ -1,3 +1,4 @@
+#!/usr/bin/env pybricks-micropython
 import socket
 
 import autodrive
@@ -79,6 +80,7 @@ def startup_sequence(hostname):
 
 def run_loop_sequence(client_socket):
     global run_is_not_done
+    send_message("received robot phase", client_socket)
     robot_heading, vector_list, square_size = get_info(client_socket)
     while run_is_not_done:
         message = receive_message(client_socket)
@@ -134,6 +136,7 @@ def run_calibration(client_socket):
         if message.lower().strip() == "calibration done":
             calibration_difference = receive_message(client_socket)
             autodrive.set_calibration_variable(float(calibration_difference))
+            phase_switcher(client_socket)
 
 
 # Run the client

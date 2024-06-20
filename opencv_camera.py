@@ -194,14 +194,29 @@ def find_walls(frame):
 
 def find_triangle(
         frame,
-        area_size=1000,
-        #105,145,135
-        #134,191,156
-        lower_green=np.array([125, 135, 95]),
-        upper_green=np.array([165, 205, 145])
+        area_size=100,
+        lower_green=np.array([25, 25, 25]),
+        upper_green=np.array([100, 255, 255])
 ):
+    '''
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     mask = cv2.inRange(frame, lower_green, upper_green)
+    '''
+    global robot_identifier
+    # Convert to HSV color space
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Create a mask based on green color range
+    mask = cv2.inRange(hsv_frame, lower_green, upper_green)
+
+    # Apply morphological operations (optional)
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.erode(mask, kernel, iterations=1)
+    mask = cv2.dilate(mask, kernel, iterations=1)
+
+    cv2.imshow("mask", mask)
+    cv2.waitKey(0)
+
     points = []
 
     # Finding based on shape
@@ -213,7 +228,6 @@ def find_triangle(
             [area, triangle] = cv2.minEnclosingTriangle(i)
             if area > area_size:
                 print(area)
-                cv2.imshow('triangle masked Image', mask)
                 frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
                 robot_identifier.append(i)
                 points = triangle
@@ -348,7 +362,7 @@ def print_grid(grid):
 
 
 def take_picture():
-    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     ret, frame = cap.read()
 
     return frame
@@ -357,7 +371,7 @@ def take_picture():
 def get_info_from_camera():
     balls = []
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/real_map.jpg'), (1280,720))
+    input_image = cv2.resize(take_picture(), (1280,720))
 
     newFrame, points = find_triangle(input_image)
     if points is not None:

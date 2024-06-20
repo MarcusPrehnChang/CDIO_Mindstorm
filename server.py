@@ -52,7 +52,7 @@ def startup_sequence():
         return robot, server_socket
 
 
-def start_of_run_sequence(robot_heading, vector_list, square_size):
+def start_of_run_sequence(robot_heading, vector_list, square_size, robot):
     send_message(robot_heading, robot)
     message = receive_message(robot)
     if message.lower().strip() == "received":
@@ -63,7 +63,7 @@ def start_of_run_sequence(robot_heading, vector_list, square_size):
             message = receive_message(robot)
 
 
-def run_sequence(vector_list, square_size):
+def run_sequence(vector_list, square_size, robot):
     send_message(vector_list, robot)
     message = receive_message(robot)
     if message.lower().strip() == "received":

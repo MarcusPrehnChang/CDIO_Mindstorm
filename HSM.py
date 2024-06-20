@@ -46,6 +46,8 @@ def calibration(first_frame, second_frame):
 
     opencv_camera.detect_Objects(first_frame)
     first_triangle, first_points = opencv_camera.find_triangle(first_frame)
+    print("first points: " + str(first_points))
+    print("first triangle: " + str(first_triangle))
     a1, b1, first_tip_of_tri = opencv_camera.find_abc(first_points)
     print(first_tip_of_tri)
 
@@ -60,7 +62,7 @@ def calibration(first_frame, second_frame):
     calibration_difference = cell_width / (first_tip_difference - second_tip_difference)
 
     abs(calibration_difference)
-    print("Calibration function, calibration difference " + calibration_difference)
+    print("Calibration function, calibration difference " + str(calibration_difference))
     return calibration_difference
 
 
@@ -80,12 +82,18 @@ def run_robot_calibration():
 
 
 def run_robot():
+    server.send_message("robot phase", robot)
+    server.receive_message(robot)
     robot_heading, vector_list, square_size = get_robot_info()
+    print("run robot vectorlist: ", vector_list)
+    vector_list = eval(vector_list)
+    robot_heading = eval(robot_heading)
+    square_size = int(square_size)
     iterator = 0
-    server.start_of_run_sequence(robot_heading, [vector_list[iterator]], square_size)
+    server.start_of_run_sequence(str(robot_heading), str(vector_list[iterator]), str(square_size), robot)
     iterator += 1
     while True:
-        server.run_sequence([vector_list[iterator]], square_size)
+        server.run_sequence(str(vector_list[iterator]), str(square_size), robot)
         iterator += 1
 
 
