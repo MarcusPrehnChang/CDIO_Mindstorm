@@ -1,4 +1,3 @@
-#!/usr/bin/env pybricks-micropython
 import socket
 
 import autodrive

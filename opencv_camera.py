@@ -8,8 +8,6 @@ import pathFinder
 from Translator import GridTranslator
 from pathFinder import find_path_to_multiple
 
-# import pandas as pd
-
 index = ["color", "color_name", "hex", "R", "G", "B"]
 columns = 90
 rows = 60
@@ -44,7 +42,6 @@ def find_highprio(frame, min_radius=5, max_radius=20):
             continue
         circularity = 4 * np.pi * area / (perimeter * perimeter)
         if circularity > 0.7:
-            print("circularity of orange: ", circularity)
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
             center = (int(x), int(y))
@@ -70,14 +67,14 @@ def find_ball(frame, min_radius=4, max_radius=20):
             continue
         circularity = 4 * np.pi * area / (perimeter * perimeter)
         if circularity > 0.7:
-            print("circularity passed: ")
+            print("circularity passed: ", i , " times")
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
             x, y = int(x), int(y)
             center = (x, y)
             radius = int(radius)
 
-            print(radius)
+            print("radius of the " , i, "th ball is: ", radius)
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
                 balls.append(contour)
@@ -104,13 +101,9 @@ def map_objects(box_dimensions, output_image):
     cell_width = w // columns
     cell_height = h // rows
 
-
     print("cell width: ", cell_width)
-
-    counter = 0
     mask = np.zeros((h, w), dtype=np.uint8)
-    cv2.imshow('cockus minimus', output_image)
-    print("inside the map", robot_identifier)
+    cv2.imshow('Image given to map_objects', output_image)
 
     for wall in walls:
         cv2.drawContours(mask, [wall], -1, 255, thickness=cv2.FILLED, offset=(-x, -y))
@@ -135,7 +128,7 @@ def map_objects(box_dimensions, output_image):
         cv2.line(mask, start_point, end_point, (143), 1)
 
 
-    cv2.imshow('cockus pikus', mask)
+    cv2.imshow('Shape masked grid', mask)
 
 
     cv2.waitKey(0)
@@ -181,8 +174,7 @@ def find_walls(frame):
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     highest_size = 0
     largest_contour = None
-    cv2.imshow("pikus dickus", frame)
-    cv2.imshow("pikus cockus", mask)
+    cv2.imshow("masked wall image", mask)
     cv2.waitKey(0)
     cv2.destroyAllWindows
 
@@ -219,7 +211,7 @@ def find_triangle(
             [area, triangle] = cv2.minEnclosingTriangle(i)
             if area > area_size:
                 print(area)
-                cv2.imshow('Mask Image', mask)
+                cv2.imshow('triangle masked Image', mask)
                 frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
                 robot_identifier.append(i)
                 points = triangle
@@ -381,9 +373,9 @@ def get_info_from_camera():
     translated_goals, translated_high, translated_start = grid_translator.get_info()
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
-    print("Path:", path)
+    print("Fullpath:", path)
     vectors = grid_translator.make_list_of_lists(path)
-    print("work?", vectors)
+    print("vectors made", vectors)
     vectorlist = grid_translator.make_vectors(vectors)
     return vectorlist, vec
 
