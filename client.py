@@ -1,3 +1,5 @@
+#!/usr/bin/env pybricks-micropython
+
 import socket
 
 import autodrive
@@ -128,7 +130,7 @@ def run_calibration(client_socket):
 
 # Run the client
 def run_client():
-    startup_sequence("192.168.98.209")
+    startup_sequence("192.168.191.124")
     # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
     # startup_thread.start()
     # startup_thread.join()

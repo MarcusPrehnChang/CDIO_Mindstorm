@@ -370,7 +370,7 @@ def take_picture():
 def get_info_from_camera():
     balls = []
     # Image Capture
-    input_image = cv2.resize(cv2.imread('images/real_map.jpg'), (1280,720))
+    input_image = cv2.resize(cv2.imread('images/testtesttest.jpg'), (1280,720))
 
     newFrame, points = find_triangle(input_image)
     if points is not None:
@@ -419,5 +419,5 @@ def test():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-test()
+#test()
 
