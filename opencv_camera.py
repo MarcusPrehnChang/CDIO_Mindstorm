@@ -98,6 +98,8 @@ def robot_builder(robot_size):
 
 def map_objects(box_dimensions, output_image):
     x, y, w, h = box_dimensions
+    global cell_width
+    global cell_height
     cell_width = w // columns
     cell_height = h // rows
 
@@ -362,7 +364,7 @@ def print_grid(grid):
 
 
 def take_picture():
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
     ret, frame = cap.read()
 
     return frame

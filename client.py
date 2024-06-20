@@ -83,6 +83,9 @@ def run_loop_sequence(client_socket):
     send_message("received robot phase", client_socket)
     robot_heading, vector_list, square_size = get_info(client_socket)
     while run_is_not_done:
+        print("before running")
+        robot_heading = auto_drive(vector_list, square_size, robot_heading)
+        print("after running")
         message = receive_message(client_socket)
         vector_list = eval(message)
         send_message("received", client_socket)
@@ -98,7 +101,9 @@ def run_loop_sequence(client_socket):
         # Wait for the autodrive thread to finish
         # autodrive_thread.join()
         # Stop the listen_for_emergency_stop thread to receive new messages
-        robot_heading = auto_drive(vector_list, square_size, robot_heading)
+
+
+
         emergency_stop_listener = False
 
         send_message("run is done", client_socket)
@@ -134,14 +139,16 @@ def run_calibration(client_socket):
         send_message("calibration move done", client_socket)
         message = receive_message(client_socket)
         if message.lower().strip() == "calibration done":
+            send_message("Received", client_socket)
             calibration_difference = receive_message(client_socket)
+            send_message("Received", client_socket)
             autodrive.set_calibration_variable(float(calibration_difference))
             phase_switcher(client_socket)
 
 
 # Run the client
 def run_client():
-    client_socket = startup_sequence("192.168.191.184")
+    client_socket = startup_sequence("192.168.191.209")
     phase_switcher(client_socket)
     # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
     # startup_thread.start()

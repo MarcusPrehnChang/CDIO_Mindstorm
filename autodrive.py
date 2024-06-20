@@ -106,6 +106,7 @@ def get_angle_to_turn(robot_heading, pointer_vector):
 
 
 def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
+    print("autodriving")
     for list_of_vectors in list_of_list_of_vectors:
         pick_up_ball()
         new_heading = navigate_to_ball(list_of_vectors, square_size, robot_heading)

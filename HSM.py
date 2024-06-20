@@ -27,6 +27,7 @@ def main():
 
         elif current_phase == phases.Calibration_phase:
             run_robot_calibration()
+            print("changing to robot phase")
             current_phase = phases.Robot_phase
 
         elif current_phase == phases.Robot_phase:
@@ -59,9 +60,12 @@ def calibration(first_frame, second_frame):
 
     first_tip_difference = first_tip_of_tri[0] - first_tip_of_tri[1]
     second_tip_difference = second_tip_of_tri[0] - second_tip_of_tri[1]
-    calibration_difference = cell_width / (first_tip_difference - second_tip_difference)
+    print(str(first_tip_difference))
+    print(str(second_tip_difference))
+    print(str(cell_width))
+    calibration_difference = abs(cell_width / (first_tip_difference - second_tip_difference))
 
-    abs(calibration_difference)
+
     print("Calibration function, calibration difference " + str(calibration_difference))
     return calibration_difference
 
@@ -78,7 +82,10 @@ def run_robot_calibration():
     first_frame, second_frame = server.run_calibration_sequence(robot)
     calibration_difference = calibration(first_frame, second_frame)
     server.send_message("calibration done", robot)
+    server.receive_message(robot)
     server.send_message(str(calibration_difference), robot)
+    server.receive_message(robot)
+
 
 
 def run_robot():
@@ -87,6 +94,7 @@ def run_robot():
     robot_heading, vector_list, square_size = get_robot_info()
     print("run robot vectorlist: ", vector_list)
     vector_list = eval(vector_list)
+    vector_list = [vector_list]
     robot_heading = eval(robot_heading)
     square_size = int(square_size)
     iterator = 0
