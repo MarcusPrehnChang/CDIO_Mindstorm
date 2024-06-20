@@ -9,11 +9,13 @@ import Translator
 robot = None
 server_socket = None
 
+
 class phases(Enum):
     Startup_phase = 1,
     Calibration_phase = 2,
     Robot_phase = 3,
     emergency_phase = 4
+
 
 def main():
     current_phase = phases.Startup_phase
@@ -45,6 +47,7 @@ def calibration(first_frame, second_frame):
     opencv_camera.detect_Objects(first_frame)
     first_triangle, first_points = opencv_camera.find_triangle(first_frame)
     a1, b1, first_tip_of_tri = opencv_camera.find_abc(first_points)
+    print(first_tip_of_tri)
 
     cell_width = opencv_camera.cell_width
 
@@ -88,3 +91,5 @@ def run_robot():
 
 def emergency_stop():
     print("implement emergency phase")
+
+main()

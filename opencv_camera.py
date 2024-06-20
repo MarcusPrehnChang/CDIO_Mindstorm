@@ -195,8 +195,10 @@ def find_walls(frame):
 def find_triangle(
         frame,
         area_size=1000,
-        lower_green=np.array([95, 100, 75]),
-        upper_green=np.array([140, 145, 110])
+        #105,145,135
+        #134,191,156
+        lower_green=np.array([125, 135, 95]),
+        upper_green=np.array([165, 205, 145])
 ):
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     mask = cv2.inRange(frame, lower_green, upper_green)

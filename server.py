@@ -1,7 +1,6 @@
 import socket
 import threading
 
-import HSM
 import opencv_camera
 from opencv_camera import get_info_from_camera as get_inf
 
@@ -10,7 +9,7 @@ stop_flag = False
 
 def run_server():
     # Get hostname and port
-    host = "192.168.98.209"
+    host = "192.168.191.184"
     port = 5000
 
     # Get the instance of socket and start listening on host and port.
