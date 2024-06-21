@@ -129,9 +129,8 @@ def calibration_move():
 
 
 def pick_up_ball():
-    small_motor.run(-400)
+    small_motor.run(400)
     wait(100)
-
 
 
 def set_calibration_variable(new_calibration_variable):
