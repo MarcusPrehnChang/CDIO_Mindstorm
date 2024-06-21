@@ -3,7 +3,6 @@ import math
 import cv2
 import numpy as np
 
-
 import pathFinder
 from Translator import GridTranslator
 from pathFinder import find_path_to_multiple
@@ -24,7 +23,6 @@ cell_width = 0
 def detect_Objects(frame):
     find_ball(frame)
     cell_height, cell_width, bounding_box = find_box(frame)
-    print("cell width, cell_height, boundingBox: " , cell_width, " ", cell_height, " ", bounding_box)
     frame = map_objects(bounding_box, cell_height, cell_width, frame)
     return frame
 
@@ -58,7 +56,6 @@ def find_ball(frame, min_radius=4, max_radius=20):
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     find_highprio(frame)
 
-
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
@@ -67,14 +64,12 @@ def find_ball(frame, min_radius=4, max_radius=20):
             continue
         circularity = 4 * np.pi * area / (perimeter * perimeter)
         if circularity > 0.7:
-            print("circularity passed: ", i , " times")
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
             x, y = int(x), int(y)
             center = (x, y)
             radius = int(radius)
 
-            print("radius of the " , i, "th ball is: ", radius)
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
                 balls.append(contour)
@@ -82,7 +77,6 @@ def find_ball(frame, min_radius=4, max_radius=20):
                 cv2.circle(frame, center, radius, (255, 0, 0), 2)
                 gooseEgg.append(contour)
 
-    
     return balls, highprio
 
 def find_box(frame):
@@ -91,7 +85,7 @@ def find_box(frame):
     cell_width = int(math.ceil(w / columns))
     cell_height = int(math.ceil(h / rows))
     return cell_width, cell_height, bounding_box
- 
+
 
 def robot_builder(robot_size):
     robot_length = 30
@@ -133,9 +127,7 @@ def map_objects(bounding_box, cell_width, cell_height, output_image):
         end_point = (j * cell_width, h)
         cv2.line(mask, start_point, end_point, (143), 1)
 
-
     cv2.imshow('Shape masked grid', mask)
-
 
     cv2.waitKey(0)
     cv2.destroyAllWindows
@@ -158,14 +150,13 @@ def map_objects(bounding_box, cell_width, cell_height, output_image):
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 75):
                 robot_size += 1
                 arr[row][col] = 5
-                
 
-
-    return output_image#, robot_size
+    return output_image  # , robot_size
 
 
 def get_width():
     return cell_width
+
 
 def find_walls(frame):
     minimum_size = 100
@@ -233,12 +224,11 @@ def find_triangle(
         if len(approx) == 3:
             [area, triangle] = cv2.minEnclosingTriangle(i)
             if area > area_size:
-                print(area)
                 frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
-                robot_identifier.append(i)
                 points = triangle
+                contour = i
 
-    return frame, points
+    return frame, points, contour
 
 
 def find_abc(points):
@@ -252,19 +242,12 @@ def find_abc(points):
     length2 = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
     length3 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
 
-    print("length1: " + length1.__str__())
-    print("length2: " + length2.__str__())
-    print("length3: " + length3.__str__())
-
     # Determine which point is C (the return is in this order A, B, C)
     if math.isclose(length1, length2, abs_tol=10):
-        # print("1")
         return points[1][0], points[2][0], points[0][0]
     elif math.isclose(length3, length2, abs_tol=10):
-        # print("2")
         return points[0][0], points[1][0], points[2][0]
     elif math.isclose(length1, length3, abs_tol=10):
-        # print("3")
         return points[0][0], points[2][0], points[1][0]
     else:
         return None, None, None
@@ -278,24 +261,16 @@ def get_orientation(frame, points):
     y1, x1 = A
     y2, x2 = B
     y3, x3 = C
-    print(x1, y1, x2, y2, x3, y3)
 
     # Calculate the point between A and B
     Mx = (x2 + x1) / 2
     My = (y2 + y1) / 2
 
-    #print("Mx:", Mx)
-    #print("My:", My)
-
-    #print("x3:", x3)
-    #print("y3:", y3)
-
     # Calculate the vector (direction the robot is going)
     # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
     V = [float(Mx - x3), float((My - y3) * -1)]
     return V
-    #except:
-    #    print("increasing sensitivity")
+    # except:
     #    return inc_sen_triangle(frame)
 
 
@@ -338,6 +313,7 @@ def inc_sen_triangle(frame):
             break
 '''
 
+
 # Increases the search for the balls by increasing the sensitivity over 10 iterations.
 def inc_sen_balls(frame):
     for i in range(10):
@@ -374,17 +350,34 @@ def take_picture():
     return frame
 
 
-def get_info_from_camera():
-    balls = []
-    # Image Capture
-    input_image = cv2.resize(cv2.imread("images/Robot_in_field.jpg"), (1280,720))
+def reset_global_values():
+    # Access to modify global values
+    global balls
+    global highprio
+    global robot_identifier
+    global walls
+    global gooseEgg
 
-    newFrame, points = find_triangle(input_image)
+    # Reset global values
+    balls = []
+    highprio = []
+    robot_identifier = []
+    walls = []
+    gooseEgg = []
+
+
+def get_info_from_camera():
+    reset_global_values()
+
+    # Image Capture
+    input_image = cv2.resize(take_picture(), (1280, 720))
+
+    newFrame, points, contour = find_triangle(input_image)
+    robot_identifier.append(contour)
     if points is not None:
         vec = get_orientation(input_image, points)
     else:
         print("error finding triangle")
-    print(points)
 
     if input_image is None:
         print("Error: Could not open or read the image")
@@ -395,36 +388,32 @@ def get_info_from_camera():
     translated_goals, translated_high, translated_start = grid_translator.get_info()
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
-    print("Fullpath:", path)
     vectors = grid_translator.make_list_of_lists(path)
-    print("vectors made", vectors)
     vectorlist = grid_translator.make_vectors(vectors)
     return vectorlist, vec
 
 
 def test():
-    #frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
+    # frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
 
     frame = cv2.imread('images/thisistheone.jpg')
 
-    new_frame, points = find_triangle(frame)
+    new_frame, points, contour = find_triangle(frame)
+    robot_identifier.append(contour)
     vec = get_orientation(frame, points)
-    print("Vector:" + str(vec))
-    print(robot_identifier)
 
     grid_translator = GridTranslator(arr)
     grid_translator.translate()
     translated_goals, translated_high, translated_start = grid_translator.get_info()
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
-    print("Path:", path)
+
     vectors = grid_translator.make_list_of_lists(path)
-    print("work?", vectors)
+
     vectorlist = grid_translator.make_vectors(vectors)
     print("vectors", vectorlist)
     cv2.imshow('frame', new_frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-get_info_from_camera()
 
