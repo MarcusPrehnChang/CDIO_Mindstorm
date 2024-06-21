@@ -23,9 +23,9 @@ cell_width = 0
 
 def detect_Objects(frame):
     find_ball(frame)
-    bounding_box = find_walls(frame)
-    frame = map_objects(bounding_box, frame)
-    
+    cell_height, cell_width, bounding_box = find_box(frame)
+    print("cell width, cell_height, boundingBox: " , cell_width, " ", cell_height, " ", bounding_box)
+    frame = map_objects(bounding_box, cell_height, cell_width, frame)
     return frame
 
 
@@ -84,6 +84,13 @@ def find_ball(frame, min_radius=4, max_radius=20):
 
     
     return balls, highprio
+
+def find_box(frame):
+    bounding_box = find_walls(frame)
+    x, y, w, h = bounding_box
+    cell_width = int(math.ceil(w / columns))
+    cell_height = int(math.ceil(h / rows))
+    return cell_width, cell_height, bounding_box
  
 
 def robot_builder(robot_size):
@@ -96,13 +103,8 @@ def robot_builder(robot_size):
 
     return robot_grid_height, robot_grid_width
 
-def map_objects(box_dimensions, output_image):
-    x, y, w, h = box_dimensions
-    global cell_width
-    global cell_height
-    cell_width = w // columns
-    cell_height = h // rows
-
+def map_objects(bounding_box, cell_width, cell_height, output_image):
+    x, y, w, h = bounding_box
     print("cell width: ", cell_width)
     mask = np.zeros((h, w), dtype=np.uint8)
     cv2.imshow('Image given to map_objects', output_image)
@@ -120,13 +122,15 @@ def map_objects(box_dimensions, output_image):
     robot_size = 0
 
     for i in range(rows + 1):
-        start_point = (0, i * cell_height)
-        end_point = (w, i * cell_height)
+        start_point = (0, i*cell_height)
+        end_point = (w, i*cell_height)
         cv2.line(mask, start_point, end_point, (143),1)
 
     for j in range(columns + 1):
-        start_point = (j * cell_height, 0)
-        end_point = (j * cell_height, h)
+        print(j)
+        print("length of rows", columns, " current width ", j*cell_width, " max width ", w)
+        start_point = (j * cell_width, 0)
+        end_point = (j * cell_width, h)
         cv2.line(mask, start_point, end_point, (143), 1)
 
 
@@ -373,7 +377,7 @@ def take_picture():
 def get_info_from_camera():
     balls = []
     # Image Capture
-    input_image = cv2.resize(take_picture(), (1280,720))
+    input_image = cv2.resize(cv2.imread("images/Robot_in_field.jpg"), (1280,720))
 
     newFrame, points = find_triangle(input_image)
     if points is not None:
@@ -422,4 +426,5 @@ def test():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+get_info_from_camera()
 
