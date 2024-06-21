@@ -93,7 +93,7 @@ def run_calibration_sequence(robot):
 
 
 # Task is to take frames for left and right angle with the robot
-def run_calibration_angle_server(robot):
+def run_calibration_angle_sequence(robot):
     send_message("calibration phase", robot)
     message = receive_message(robot)
     if message.lower().strip() == "calibrate ready":

@@ -29,6 +29,7 @@ def main():
 
         elif current_phase == phases.Calibration_phase:
             run_robot_calibration()
+            run_robot_calibration_angle()
             current_phase = phases.Robot_phase
 
         elif current_phase == phases.Robot_phase:
@@ -120,7 +121,7 @@ def run_robot_calibration():
 
 
 def run_robot_calibration_angle():
-    f1_left, f2_left, f1_right, f2_right = server.run_calibration_angle_server(robot)
+    f1_left, f2_left, f1_right, f2_right = server.run_calibration_angle_sequence(robot)
     calibration_left, calibration_right = calibration_turn(f1_left, f2_left, f1_right, f2_right)
     server.send_message("calibration done", robot)
     if server.receive_message(robot) == "Received":
@@ -129,7 +130,6 @@ def run_robot_calibration_angle():
             server.send_message(str(calibration_right), robot)
             if server.receive_message(robot) == "Received":
                 server.send_message("Done with calibration", robot)
-                if server.receive_message(robot) == "Done applying angles":
 
 
 

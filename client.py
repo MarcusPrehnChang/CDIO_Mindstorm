@@ -59,6 +59,7 @@ def phase_switcher(client_socket):
     received_message = receive_message(client_socket)
     if received_message.lower().strip() == "calibration phase":
         run_calibration(client_socket)
+        run_calibration_angle(client_socket)
     elif received_message.lower().strip() == "robot phase":
         run_loop_sequence(client_socket)
     elif received_message.lower().strip() == "emergency phase":
