@@ -66,6 +66,11 @@ def phase_switcher(client_socket):
 
 
 def startup_sequence(hostname):
+    global autodrive_thread
+    global emergency_stop_listener
+    global run_is_not_done
+    global stop_flag
+
     # Connect to the server
     client_socket = connect_to_server(hostname)
     # Send ready message
