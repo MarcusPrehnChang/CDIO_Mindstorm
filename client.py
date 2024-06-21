@@ -144,7 +144,6 @@ def run_calibration(client_socket):
             calibration_difference = receive_message(client_socket)
             send_message("Received", client_socket)
             autodrive.set_calibration_variable_drive(float(calibration_difference))
-            phase_switcher(client_socket)
 
 
 def run_calibration_angle(client_socket):
@@ -168,12 +167,13 @@ def run_calibration_angle(client_socket):
                     send_message("Setting up angle calibration", client_socket)
                     autodrive.set_calibration_variable_angle(angle_right, angle_left)
                     send_message("Done applying angles", client_socket)
+                    phase_switcher(client_socket)
 
 
 
 # Run the client
 def run_client():
-    client_socket = startup_sequence("192.168.10.209")
+    client_socket = startup_sequence("192.168.10.124")
     phase_switcher(client_socket)
     # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
     # startup_thread.start()

@@ -22,7 +22,7 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=110)
 # robot.settings(straight_speed=200, straight_acceleration=100, turn_rate=100)
 
 
-gyro_sensor = GyroSensor(Port.S1)
+gyro_sensor = GyroSensor(Port.S2)
 
 square_size = 20
 calibration_variable_drive = 1
