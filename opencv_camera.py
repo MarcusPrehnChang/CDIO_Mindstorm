@@ -3,7 +3,6 @@ import math
 import cv2
 import numpy as np
 
-
 import pathFinder
 from Translator import GridTranslator
 from pathFinder import find_path_to_multiple
@@ -25,7 +24,7 @@ def detect_Objects(frame):
     find_ball(frame)
     bounding_box = find_walls(frame)
     frame = map_objects(bounding_box, frame)
-    
+
     return frame
 
 
@@ -58,7 +57,6 @@ def find_ball(frame, min_radius=4, max_radius=20):
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     find_highprio(frame)
 
-
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
@@ -80,9 +78,8 @@ def find_ball(frame, min_radius=4, max_radius=20):
                 cv2.circle(frame, center, radius, (255, 0, 0), 2)
                 gooseEgg.append(contour)
 
-    
     return balls, highprio
- 
+
 
 def robot_builder(robot_size):
     robot_length = 30
@@ -93,6 +90,7 @@ def robot_builder(robot_size):
     robot_grid_width = math.ceil((robot_width / triangle_bottom) * robot_size)
 
     return robot_grid_height, robot_grid_width
+
 
 def map_objects(box_dimensions, output_image):
     x, y, w, h = box_dimensions
@@ -120,16 +118,14 @@ def map_objects(box_dimensions, output_image):
     for i in range(rows + 1):
         start_point = (0, i * cell_height)
         end_point = (w, i * cell_height)
-        cv2.line(mask, start_point, end_point, (143),1)
+        cv2.line(mask, start_point, end_point, (143), 1)
 
     for j in range(columns + 1):
         start_point = (j * cell_height, 0)
         end_point = (j * cell_height, h)
         cv2.line(mask, start_point, end_point, (143), 1)
 
-
     cv2.imshow('Shape masked grid', mask)
-
 
     cv2.waitKey(0)
     cv2.destroyAllWindows
@@ -152,14 +148,13 @@ def map_objects(box_dimensions, output_image):
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 75):
                 robot_size += 1
                 arr[row][col] = 5
-                
 
-
-    return output_image#, robot_size
+    return output_image  # , robot_size
 
 
 def get_width():
     return cell_width
+
 
 def find_walls(frame):
     minimum_size = 100
@@ -228,10 +223,10 @@ def find_triangle(
             [area, triangle] = cv2.minEnclosingTriangle(i)
             if area > area_size:
                 frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
-                robot_identifier.append(i)
                 points = triangle
+                contour = i
 
-    return frame, points
+    return frame, points, contour
 
 
 def find_abc(points):
@@ -273,7 +268,7 @@ def get_orientation(frame, points):
     # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
     V = [float(Mx - x3), float((My - y3) * -1)]
     return V
-    #except:
+    # except:
     #    return inc_sen_triangle(frame)
 
 
@@ -316,6 +311,7 @@ def inc_sen_triangle(frame):
             break
 '''
 
+
 # Increases the search for the balls by increasing the sensitivity over 10 iterations.
 def inc_sen_balls(frame):
     for i in range(10):
@@ -355,9 +351,10 @@ def take_picture():
 def get_info_from_camera():
     balls = []
     # Image Capture
-    input_image = cv2.resize(take_picture(), (1280,720))
+    input_image = cv2.resize(take_picture(), (1280, 720))
 
-    newFrame, points = find_triangle(input_image)
+    newFrame, points, contour = find_triangle(input_image)
+    robot_identifier.append(contour)
     if points is not None:
         vec = get_orientation(input_image, points)
     else:
@@ -378,11 +375,12 @@ def get_info_from_camera():
 
 
 def test():
-    #frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
+    # frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
 
     frame = cv2.imread('images/thisistheone.jpg')
 
-    new_frame, points = find_triangle(frame)
+    new_frame, points, contour = find_triangle(frame)
+    robot_identifier.append(contour)
     vec = get_orientation(frame, points)
 
     grid_translator = GridTranslator(arr)
@@ -398,5 +396,3 @@ def test():
     cv2.imshow('frame', new_frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-
