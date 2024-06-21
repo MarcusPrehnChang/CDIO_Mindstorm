@@ -21,6 +21,7 @@ def main():
     current_phase = phases.Startup_phase
     running = True
     while(running):
+        print("running")
         if current_phase == phases.Startup_phase:
             startup()
             current_phase = phases.Calibration_phase
