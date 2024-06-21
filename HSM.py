@@ -21,14 +21,12 @@ def main():
     current_phase = phases.Startup_phase
     running = True
     while(running):
-        print("running")
         if current_phase == phases.Startup_phase:
             startup()
             current_phase = phases.Calibration_phase
 
         elif current_phase == phases.Calibration_phase:
             run_robot_calibration()
-            print("changing to robot phase")
             current_phase = phases.Robot_phase
 
         elif current_phase == phases.Robot_phase:
@@ -48,10 +46,8 @@ def calibration(first_frame, second_frame):
 
     opencv_camera.detect_Objects(first_frame)
     first_triangle, first_points = opencv_camera.find_triangle(first_frame)
-    print("first points: " + str(first_points))
-    print("first triangle: " + str(first_triangle))
+
     a1, b1, first_tip_of_tri = opencv_camera.find_abc(first_points)
-    print(first_tip_of_tri)
 
     cell_width = opencv_camera.cell_width
 
@@ -61,13 +57,9 @@ def calibration(first_frame, second_frame):
 
     first_tip_difference = first_tip_of_tri[0] - first_tip_of_tri[1]
     second_tip_difference = second_tip_of_tri[0] - second_tip_of_tri[1]
-    print(str(first_tip_difference))
-    print(str(second_tip_difference))
-    print(str(cell_width))
+
     calibration_difference = abs(cell_width / (first_tip_difference - second_tip_difference))
 
-
-    print("Calibration function, calibration difference " + str(calibration_difference))
     return calibration_difference
 
 

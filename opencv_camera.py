@@ -67,14 +67,12 @@ def find_ball(frame, min_radius=4, max_radius=20):
             continue
         circularity = 4 * np.pi * area / (perimeter * perimeter)
         if circularity > 0.7:
-            print("circularity passed: ", i , " times")
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             r, b, g = get_pixel_color(frame, int(x), int(y))
             x, y = int(x), int(y)
             center = (x, y)
             radius = int(radius)
 
-            print("radius of the " , i, "th ball is: ", radius)
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
                 balls.append(contour)
@@ -229,7 +227,6 @@ def find_triangle(
         if len(approx) == 3:
             [area, triangle] = cv2.minEnclosingTriangle(i)
             if area > area_size:
-                print(area)
                 frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
                 robot_identifier.append(i)
                 points = triangle
@@ -248,19 +245,12 @@ def find_abc(points):
     length2 = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
     length3 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
 
-    print("length1: " + length1.__str__())
-    print("length2: " + length2.__str__())
-    print("length3: " + length3.__str__())
-
     # Determine which point is C (the return is in this order A, B, C)
     if math.isclose(length1, length2, abs_tol=10):
-        # print("1")
         return points[1][0], points[2][0], points[0][0]
     elif math.isclose(length3, length2, abs_tol=10):
-        # print("2")
         return points[0][0], points[1][0], points[2][0]
     elif math.isclose(length1, length3, abs_tol=10):
-        # print("3")
         return points[0][0], points[2][0], points[1][0]
     else:
         return None, None, None
@@ -274,24 +264,16 @@ def get_orientation(frame, points):
     y1, x1 = A
     y2, x2 = B
     y3, x3 = C
-    print(x1, y1, x2, y2, x3, y3)
 
     # Calculate the point between A and B
     Mx = (x2 + x1) / 2
     My = (y2 + y1) / 2
-
-    #print("Mx:", Mx)
-    #print("My:", My)
-
-    #print("x3:", x3)
-    #print("y3:", y3)
 
     # Calculate the vector (direction the robot is going)
     # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
     V = [float(Mx - x3), float((My - y3) * -1)]
     return V
     #except:
-    #    print("increasing sensitivity")
     #    return inc_sen_triangle(frame)
 
 
@@ -380,7 +362,6 @@ def get_info_from_camera():
         vec = get_orientation(input_image, points)
     else:
         print("error finding triangle")
-    print(points)
 
     if input_image is None:
         print("Error: Could not open or read the image")
@@ -391,9 +372,7 @@ def get_info_from_camera():
     translated_goals, translated_high, translated_start = grid_translator.get_info()
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
-    print("Fullpath:", path)
     vectors = grid_translator.make_list_of_lists(path)
-    print("vectors made", vectors)
     vectorlist = grid_translator.make_vectors(vectors)
     return vectorlist, vec
 
@@ -405,17 +384,15 @@ def test():
 
     new_frame, points = find_triangle(frame)
     vec = get_orientation(frame, points)
-    print("Vector:" + str(vec))
-    print(robot_identifier)
 
     grid_translator = GridTranslator(arr)
     grid_translator.translate()
     translated_goals, translated_high, translated_start = grid_translator.get_info()
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
-    print("Path:", path)
+
     vectors = grid_translator.make_list_of_lists(path)
-    print("work?", vectors)
+
     vectorlist = grid_translator.make_vectors(vectors)
     print("vectors", vectorlist)
     cv2.imshow('frame', new_frame)
