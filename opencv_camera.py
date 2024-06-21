@@ -348,8 +348,25 @@ def take_picture():
     return frame
 
 
-def get_info_from_camera():
+def reset_global_values():
+    # Access to modify global values
+    global balls
+    global highprio
+    global robot_identifier
+    global walls
+    global gooseEgg
+
+    # Reset global values
     balls = []
+    highprio = []
+    robot_identifier = []
+    walls = []
+    gooseEgg = []
+
+
+def get_info_from_camera():
+    reset_global_values()
+
     # Image Capture
     input_image = cv2.resize(take_picture(), (1280, 720))
 
