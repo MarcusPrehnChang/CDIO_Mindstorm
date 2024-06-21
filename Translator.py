@@ -10,8 +10,6 @@ class GridTranslator:
         self.visited = set()
 
     def translate(self):
-        for row in self.grid:
-            print(" ".join(map(str, row)))
         for row_index in range(len(self.grid)):
             for col_index in range(len(self.grid[0])):
                 value = self.grid[row_index][col_index]

@@ -87,40 +87,45 @@ def run_loop_sequence(client_socket):
     global run_is_not_done
     send_message("received robot phase", client_socket)
     robot_heading, vector_list, square_size = get_info(client_socket)
-    while run_is_not_done:
-        print("before running")
+    message = receive_message(client_socket)
+    if message.lower().strip() == "done with info":
         robot_heading = auto_drive(vector_list, square_size, robot_heading)
-        print("after running")
-        message = receive_message(client_socket)
-        vector_list = eval(message)
-        send_message("received", client_socket)
-        message = receive_message(client_socket)
-        square_size = int(message)
-        # Start the listen_for_emergency_stop thread
-        # listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
-        # Start the autodrive thread
-        # autodrive_thread = threading.Thread(target=autodrive.auto_drive, args=(vector_list, square_size, robot_heading,))
-        # listen_thread.start()
-        # autodrive_thread.start()
-
-        # Wait for the autodrive thread to finish
-        # autodrive_thread.join()
-        # Stop the listen_for_emergency_stop thread to receive new messages
-
-
-
-        emergency_stop_listener = False
-
         send_message("run is done", client_socket)
         continuation_message = receive_message(client_socket)
-        if continuation_message == "run is done":
-            send_message("received", client_socket)
-            run_is_not_done = False
-
         if continuation_message == "continue":
             send_message("received", client_socket)
-            # Reset the emergency stop listener
-            stop_flag = False
+            while run_is_not_done:
+                message = receive_message(client_socket)
+                vector_list = eval(message)
+                send_message("received", client_socket)
+                message = receive_message(client_socket)
+                square_size = int(message)
+                robot_heading = auto_drive(vector_list, square_size, robot_heading)
+                # Start the listen_for_emergency_stop thread
+                # listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
+                # Start the autodrive thread
+                # autodrive_thread = threading.Thread(target=autodrive.auto_drive, args=(vector_list, square_size, robot_heading,))
+                # listen_thread.start()
+                # autodrive_thread.start()
+
+                # Wait for the autodrive thread to finish
+                # autodrive_thread.join()
+                # Stop the listen_for_emergency_stop thread to receive new messages
+
+
+
+                emergency_stop_listener = False
+
+                send_message("run is done", client_socket)
+                continuation_message = receive_message(client_socket)
+                if continuation_message == "run is done":
+                    send_message("received", client_socket)
+                    run_is_not_done = False
+
+                if continuation_message == "continue":
+                    send_message("received", client_socket)
+                    # Reset the emergency stop listener
+                    stop_flag = False
 
 
 # Get the robot heading, vector list, and square size
@@ -131,7 +136,6 @@ def get_info(client_socket):
     send_message("received", client_socket)
     square_size = int(receive_message(client_socket))
     send_message("received", client_socket)
-
     square_size = square_size * autodrive.calibration_variable
     return robot_heading, vector_list, square_size
 

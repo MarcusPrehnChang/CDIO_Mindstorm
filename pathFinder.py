@@ -75,14 +75,11 @@ def find_path_to_multiple(grid, start, goals, object_size):
     full_path = []
     current_start = start
     remaining_goals = set(goals)
-    print("goals:", remaining_goals)
     index = 0
     while remaining_goals:
         paths = []
         for goal in remaining_goals:
-            print("Running a_star with: ", current_start, goal, object_size)
             path = a_star(grid, current_start, goal, object_size)
-            print("path:", path)
             if path:
                 paths.append((path, goal))
 
