@@ -146,6 +146,30 @@ def run_calibration(client_socket):
             phase_switcher(client_socket)
 
 
+def run_calibration_angle(client_socket):
+    send_message("calibrate ready", client_socket)
+    message = receive_message(client_socket)
+    if message.lower().strip() == "calibration left":
+        autodrive.calibration_turn_left()
+        send_message("calibration left done")
+        message = receive_message(client_socket)
+        if message.lower().strip() == "calibration right":
+            autodrive.calibration_turn_right()
+            send_message("calibration right done")
+            message = receive_message(client_socket)
+            if message.lower().strip() == "calibration done":
+                send_message("Received", client_socket)
+                angle_left = receive_message(client_socket)
+                send_message("Received", client_socket)
+                angle_right = receive_message(client_socket)
+                send_message("Received", client_socket)
+                if receive_message(client_socket) == "Done with calibration":
+                    send_message("Setting up angle calibration", client_socket)
+                    autodrive.set_calibration_variable_angle(angle_right, angle_left)
+                    send_message("Done applying angles", client_socket)
+
+
+
 # Run the client
 def run_client():
     client_socket = startup_sequence("192.168.10.209")

@@ -119,6 +119,20 @@ def run_robot_calibration():
     server.receive_message(robot)
 
 
+def run_robot_calibration_angle():
+    f1_left, f2_left, f1_right, f2_right = server.run_calibration_angle_server(robot)
+    calibration_left, calibration_right = calibration_turn(f1_left, f2_left, f1_right, f2_right)
+    server.send_message("calibration done", robot)
+    if server.receive_message(robot) == "Received":
+        server.send_message(str(calibration_left), robot)
+        if server.receive_message(robot) == "Received":
+            server.send_message(str(calibration_right), robot)
+            if server.receive_message(robot) == "Received":
+                server.send_message("Done with calibration", robot)
+                if server.receive_message(robot) == "Done applying angles":
+
+
+
 def run_robot():
     server.send_message("robot phase", robot)
     server.receive_message(robot)

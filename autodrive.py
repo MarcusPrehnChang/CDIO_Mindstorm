@@ -80,12 +80,12 @@ def navigate_to_ball(vector_list, square_size, robot_heading):
             angle_to_turn = angle_to_turn * calibration_variable_angle_right
 
         distance_to_drive = get_distance_to_drive(vector, square_size)
-        #if stop_flag:
-            #break
+        # if stop_flag:
+        # break
         # Turn the robot to the correct angle
         turn(angle_to_turn, 50)
-        #if stop_flag:
-            #break
+        # if stop_flag:
+        # break
         # Drive the robot to the target distance
         drive(distance_to_drive, 50)
 
@@ -117,8 +117,8 @@ def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
     for list_of_vectors in list_of_list_of_vectors:
         pick_up_ball()
         new_heading = navigate_to_ball(list_of_vectors, square_size, robot_heading)
-        #if stop_flag:
-            #break
+        # if stop_flag:
+        # break
     return new_heading
 
 
@@ -133,7 +133,15 @@ def calculate_square_size(amount_of_squares_length, amount_of_squares_width):
 
 
 def calibration_move():
-    drive(20,50)
+    drive(20, 50)
+
+
+def calibration_turn_left():
+    get_angle_to_turn([1,0], [0,1])
+
+
+def calibration_turn_right():
+    get_angle_to_turn([0,1], [1,0])
 
 
 def pick_up_ball():
@@ -151,6 +159,7 @@ def set_calibration_variable_angle(angle_variable_right, angle_variable_left):
     global calibration_variable_angle_left
     calibration_variable_angle_right = angle_variable_right
     calibration_variable_angle_left = angle_variable_left
+
 
 # Stop the robot
 robot.stop()
