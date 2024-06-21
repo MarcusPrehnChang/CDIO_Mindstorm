@@ -127,7 +127,7 @@ def get_info(client_socket):
     square_size = int(receive_message(client_socket))
     send_message("received", client_socket)
 
-    square_size = square_size * autodrive.calibration_variable
+    square_size = square_size * autodrive.calibration_variable_drive
     return robot_heading, vector_list, square_size
 
 
@@ -142,7 +142,7 @@ def run_calibration(client_socket):
             send_message("Received", client_socket)
             calibration_difference = receive_message(client_socket)
             send_message("Received", client_socket)
-            autodrive.set_calibration_variable(float(calibration_difference))
+            autodrive.set_calibration_variable_drive(float(calibration_difference))
             phase_switcher(client_socket)
 
 

@@ -25,7 +25,9 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=110)
 gyro_sensor = GyroSensor(Port.S1)
 
 square_size = 20
-calibration_variable = 1
+calibration_variable_drive = 1
+calibration_variable_angle_left = 1
+calibration_variable_angle_right = 1
 
 
 # angle = degrees to turn, speed = mm/s
@@ -71,6 +73,12 @@ def drive(distance, robot_speed):
 def navigate_to_ball(vector_list, square_size, robot_heading):
     for vector in vector_list:
         angle_to_turn = get_angle_to_turn(robot_heading, vector)
+        # Based on it what way it should turn
+        if angle_to_turn < 0:
+            angle_to_turn = angle_to_turn * calibration_variable_angle_left
+        else:
+            angle_to_turn = angle_to_turn * calibration_variable_angle_right
+
         distance_to_drive = get_distance_to_drive(vector, square_size)
         #if stop_flag:
             #break
@@ -133,10 +141,16 @@ def pick_up_ball():
     wait(100)
 
 
-def set_calibration_variable(new_calibration_variable):
-    global calibration_variable
-    calibration_variable = new_calibration_variable
+def set_calibration_variable_drive(new_calibration_variable):
+    global calibration_variable_drive
+    calibration_variable_drive = new_calibration_variable
 
+
+def set_calibration_variable_angle(angle_variable_right, angle_variable_left):
+    global calibration_variable_angle_right
+    global calibration_variable_angle_left
+    calibration_variable_angle_right = angle_variable_right
+    calibration_variable_angle_left = angle_variable_left
 
 # Stop the robot
 robot.stop()

@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from enum import Enum
 import opencv_camera
@@ -20,7 +22,7 @@ class phases(Enum):
 def main():
     current_phase = phases.Startup_phase
     running = True
-    while(running):
+    while (running):
         if current_phase == phases.Startup_phase:
             startup()
             current_phase = phases.Calibration_phase
@@ -42,8 +44,7 @@ def startup():
     robot, server_socket = server.startup_sequence()
 
 
-def calibration(first_frame, second_frame):
-
+def calibration_distance(first_frame, second_frame):
     opencv_camera.detect_Objects(first_frame)
     first_triangle, first_points = opencv_camera.find_triangle(first_frame)
 
@@ -63,6 +64,44 @@ def calibration(first_frame, second_frame):
     return calibration_difference
 
 
+def calculate_turn(first_frame, second_frame):
+    # Detect objects first frame
+    opencv_camera.detect_Objects(first_frame)
+
+    # Find Triangle and Vector for first frame
+    points1 = opencv_camera.find_triangle(first_frame)
+    vec1 = opencv_camera.get_orientation(first_frame, points1)
+
+    # Detect objects second frame
+    opencv_camera.detect_Objects(second_frame)
+
+    # Find Triangle and Vector for second frame
+    points2 = opencv_camera.find_triangle(second_frame)
+    vec2 = opencv_camera.get_orientation(second_frame, points2)
+
+    # Calculate turn angle between two vectors
+    # Vector Product
+    vector_product = (vec1[0] * vec2[0]) + (vec1[1] * vec2[1])
+
+    # Vector distance
+    vec1_distance = math.sqrt(vec1[0] ** 2 + vec1[1] ** 2)
+    vec2_distance = math.sqrt(vec2[0] ** 2 + vec2[1] ** 2)
+
+    # Vector Angle
+    true_vector_angle = math.acos(vector_product / (vec1_distance * vec2_distance))
+
+    calibration_difference = abs(true_vector_angle / 90)
+
+    return calibration_difference
+
+
+def calibration_turn(f1_left, f2_left, f1_right, f2_right):
+    calibration_left = calculate_turn(f1_left, f2_left)
+    calibration_right = calculate_turn(f1_right, f2_right)
+
+    return calibration_left, calibration_right
+
+
 def get_robot_info():
     vector_list, robot_heading = opencv_camera.get_info_from_camera()
     robot_heading = str(robot_heading)
@@ -73,12 +112,11 @@ def get_robot_info():
 
 def run_robot_calibration():
     first_frame, second_frame = server.run_calibration_sequence(robot)
-    calibration_difference = calibration(first_frame, second_frame)
+    calibration_difference = calibration_distance(first_frame, second_frame)
     server.send_message("calibration done", robot)
     server.receive_message(robot)
     server.send_message(str(calibration_difference), robot)
     server.receive_message(robot)
-
 
 
 def run_robot():
@@ -100,5 +138,6 @@ def run_robot():
 
 def emergency_stop():
     print("implement emergency phase")
+
 
 main()
