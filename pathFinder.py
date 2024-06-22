@@ -94,21 +94,3 @@ def find_path_to_multiple(grid, start, goals, object_size):
 
     return full_path
 
-def convertToLongerStrokes(vectorList):
-    longerStrokes = []
-    longerX, longerY, prevCordinalityX, prevCordinalityY = 0,0,0,0
-    for vector in vectorList:
-        cordinalityX = vector[0]
-        cordinalityY = vector[1]
-        if (cordinalityX == prevCordinalityX and cordinalityY==0) or (cordinalityY == prevCordinalityY and cordinalityX==0):
-            longerX += vector[0]
-            longerY += vector[1]
-        elif longerX != 0:
-            longerStrokes.extend([longerX, 0])
-            longerStrokes.extend([0, longerY])
-            longerX = 0
-            longerY = 0
-        prevCordinalityX = cordinalityX
-        prevCordinalityY = cordinalityY
-    print(str(longerStrokes))
-    return longerStrokes

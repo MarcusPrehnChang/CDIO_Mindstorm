@@ -390,6 +390,7 @@ def get_info_from_camera():
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
     vectors = grid_translator.make_list_of_lists(path)
     vectorlist = grid_translator.make_vectors(vectors)
+    longerVectorList = grid_translator.convert_to_longer_strokes()
     return vectorlist, vec
 
 
