@@ -41,11 +41,11 @@ def startup():
 def calibration(first_frame, second_frame):
 
     cell_width, cell_height, bounding_box = opencv_camera.find_box(first_frame)
-    first_triangle, first_points = opencv_camera.find_triangle(first_frame)
+    first_triangle, first_points, contour = opencv_camera.find_triangle(first_frame)
 
     a1, b1, first_tip_of_tri = opencv_camera.find_abc(first_points)
 
-    second_triangle, second_points = opencv_camera.find_triangle(second_frame)
+    second_triangle, second_points, contour = opencv_camera.find_triangle(second_frame)
     a2, b2, second_tip_of_tri = opencv_camera.find_abc(second_points)
 
     first_tip_difference = first_tip_of_tri[0] - first_tip_of_tri[1]

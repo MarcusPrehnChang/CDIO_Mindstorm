@@ -9,7 +9,7 @@ stop_flag = False
 
 def run_server():
     # Get hostname and port
-    host = "192.168.10.209"
+    host = "192.168.10.184"
     port = 5000
 
     # Get the instance of socket and start listening on host and port.

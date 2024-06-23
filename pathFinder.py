@@ -91,9 +91,8 @@ def find_path_to_multiple(grid, start, goals, object_size):
         current_start = reached_goal
         remaining_goals.remove(reached_goal)
         index += 1
-
     return full_path
-
+'''
 def convertToLongerStrokes(vectorList):
     longerStrokes = []
     longerX, longerY, prevCordinalityX, prevCordinalityY = 0,0,0,0
@@ -112,3 +111,4 @@ def convertToLongerStrokes(vectorList):
         prevCordinalityY = cordinalityY
     print(str(longerStrokes))
     return longerStrokes
+'''
