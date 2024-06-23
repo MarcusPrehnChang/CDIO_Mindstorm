@@ -22,9 +22,8 @@ cell_width = 0
 
 def detect_Objects(frame):
     find_ball(frame)
-    bounding_box = find_walls(frame)
-    frame = map_objects(bounding_box, frame)
-
+    cell_height, cell_width, bounding_box = find_box(frame)
+    frame = map_objects(bounding_box, cell_height, cell_width, frame)
     return frame
 
 
@@ -80,6 +79,13 @@ def find_ball(frame, min_radius=4, max_radius=20):
 
     return balls, highprio
 
+def find_box(frame):
+    bounding_box = find_walls(frame)
+    x, y, w, h = bounding_box
+    cell_width = int(math.ceil(w / columns))
+    cell_height = int(math.ceil(h / rows))
+    return cell_width, cell_height, bounding_box
+
 
 def robot_builder(robot_size):
     robot_length = 30
@@ -91,14 +97,8 @@ def robot_builder(robot_size):
 
     return robot_grid_height, robot_grid_width
 
-
-def map_objects(box_dimensions, output_image):
-    x, y, w, h = box_dimensions
-    global cell_width
-    global cell_height
-    cell_width = w // columns
-    cell_height = h // rows
-
+def map_objects(bounding_box, cell_width, cell_height, output_image):
+    x, y, w, h = bounding_box
     print("cell width: ", cell_width)
     mask = np.zeros((h, w), dtype=np.uint8)
     cv2.imshow('Image given to map_objects', output_image)
@@ -116,13 +116,13 @@ def map_objects(box_dimensions, output_image):
     robot_size = 0
 
     for i in range(rows + 1):
-        start_point = (0, i * cell_height)
-        end_point = (w, i * cell_height)
-        cv2.line(mask, start_point, end_point, (143), 1)
+        start_point = (0, i*cell_height)
+        end_point = (w, i*cell_height)
+        cv2.line(mask, start_point, end_point, (143),1)
 
     for j in range(columns + 1):
-        start_point = (j * cell_height, 0)
-        end_point = (j * cell_height, h)
+        start_point = (j * cell_width, 0)
+        end_point = (j * cell_width, h)
         cv2.line(mask, start_point, end_point, (143), 1)
 
     cv2.imshow('Shape masked grid', mask)
@@ -387,14 +387,15 @@ def get_info_from_camera():
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
     vectors = grid_translator.make_list_of_lists(path)
-    vectorlist = grid_translator.make_vectors(vectors)
-    return vectorlist, vec
+    vectorList = grid_translator.make_vectors(vectors)
+    longerVectorList = grid_translator.convert_to_longer_strokes(vectorList)
+    return longerVectorList, vec
 
 
 def test():
     # frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
 
-    frame = cv2.imread('images/thisistheone.jpg')
+    frame = take_picture()
 
     new_frame, points, contour = find_triangle(frame)
     robot_identifier.append(contour)
@@ -413,3 +414,5 @@ def test():
     cv2.imshow('frame', new_frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+

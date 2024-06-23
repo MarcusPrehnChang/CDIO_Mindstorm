@@ -61,6 +61,9 @@ def start_of_run_sequence(robot_heading, vector_list, square_size, robot):
         if message.lower().strip() == "received":
             send_message(square_size, robot)
             message = receive_message(robot)
+            if message.lower().strip() == "received":
+                send_message("done with info", robot)
+                message = receive_message(robot)
 
 
 def run_sequence(vector_list, square_size, robot):

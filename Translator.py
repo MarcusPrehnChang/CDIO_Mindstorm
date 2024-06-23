@@ -89,3 +89,40 @@ class GridTranslator:
 
     def get_goals(self):
         return self.goals
+
+    # [[[]]]
+    def convert_to_longer_strokes(vectorList):
+        longerStrokes = []
+        longerX, longerY = 0, 0
+
+        for i in range(len(vectorList)):
+            if len(vectorList[i]) != 1:
+                longerX += vectorList[i][0][0]
+                longerY += vectorList[i][0][1]
+                prev = vectorList[i][0]
+                for j in range(len(vectorList[i])-1):
+                        if vectorList[i][j+1][0] != prev[0]*-1 or vectorList[i][j+1][1] != prev[1]*-1:
+                            longerX += vectorList[i][j+1][0]
+                            longerY += vectorList[i][j+1][1]
+                            prev = vectorList[i][j+1]
+                        else:
+                            if longerX != 0:
+                                longerStrokes.append([longerX, 0])
+                            if longerY != 0:
+                                longerStrokes.append([0, longerY])
+                            longerX = vectorList[i][j+1][0]
+                            longerY = vectorList[i][j+1][1]
+                            prev = vectorList[i][j + 1]
+
+                if longerX != 0:
+                    longerStrokes.append([longerX, 0])
+                if longerY != 0:
+                    longerStrokes.append([0, longerY])
+                longerX = 0
+                longerY = 0
+
+        longerStrokes = [longerStrokes]
+        print("longer vectors:" + str(longerStrokes))
+        return longerStrokes
+
+

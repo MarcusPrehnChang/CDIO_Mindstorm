@@ -37,7 +37,7 @@ def a_star(grid, start, goal, object_size):
     heapq.heappush(open_set, start_node)
     closed_set = set()
     came_from = {}
-    
+
     while open_set:
         current_node = heapq.heappop(open_set)
         current_pos = current_node.position
@@ -93,3 +93,4 @@ def find_path_to_multiple(grid, start, goals, object_size):
         index += 1
 
     return full_path
+

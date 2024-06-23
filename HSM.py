@@ -4,9 +4,6 @@ import numpy as np
 from enum import Enum
 import opencv_camera
 import server
-from autodrive import calibration_move
-import pathFinder
-import Translator
 
 robot = None
 server_socket = None
@@ -141,19 +138,23 @@ def run_robot_calibration_angle():
 
 def run_robot():
     server.send_message("robot phase", robot)
-    server.receive_message(robot)
-    robot_heading, vector_list, square_size = get_robot_info()
-    print("run robot vectorlist: ", vector_list)
-    vector_list = eval(vector_list)
-    vector_list = [vector_list]
-    robot_heading = eval(robot_heading)
-    square_size = int(square_size)
-    iterator = 0
-    server.start_of_run_sequence(str(robot_heading), str(vector_list[iterator]), str(square_size), robot)
-    iterator += 1
-    while True:
-        server.run_sequence(str(vector_list[iterator]), str(square_size), robot)
-        iterator += 1
+    message = server.receive_message(robot)
+    if message.lower().strip() == "received robot phase":
+        robot_heading, vector_list, square_size = get_robot_info()
+        print("run robot vectorlist: ", vector_list)
+        vector_list = eval(vector_list)
+        vector_list = [vector_list]
+        robot_heading = eval(robot_heading)
+        square_size = int(square_size)
+        iterator = 0
+        server.start_of_run_sequence(str(robot_heading), str(vector_list[iterator]), str(square_size), robot)
+        while iterator != len(vector_list):
+            iterator += 1
+            server.run_sequence(str(vector_list[iterator]), str(square_size), robot)
+            if(iterator != len(vector_list)):
+                server.send_message("continue", robot)
+        server.send_message("run is done", robot)
+        server.receive_message(robot)
 
 
 def emergency_stop():
