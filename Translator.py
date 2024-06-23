@@ -122,8 +122,7 @@ class GridTranslator:
                 longerY = 0
 
         longerStrokes = [longerStrokes]
-        print(str(longerStrokes))
+        print("longer vectors:" + str(longerStrokes))
         return longerStrokes
 
-    path = convert_to_longer_strokes([[[1, 0], [0, 1], [1, 0], [-1, 0], [-1, 0]], [[-1, 0], [0, -1]]])
 
