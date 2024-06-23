@@ -43,14 +43,12 @@ def startup():
 
 
 def calibration_distance(first_frame, second_frame):
-    opencv_camera.detect_Objects(first_frame)
+    cell_width, cell_height, bounding_box = opencv_camera.find_box(first_frame)
     first_triangle, first_points, contour = opencv_camera.find_triangle(first_frame)
 
     a1, b1, first_tip_of_tri = opencv_camera.find_abc(first_points)
+    print(first_tip_of_tri)
 
-    cell_width = opencv_camera.cell_width
-
-    opencv_camera.detect_Objects(second_frame)
     second_triangle, second_points, contour = opencv_camera.find_triangle(second_frame)
     a2, b2, second_tip_of_tri = opencv_camera.find_abc(second_points)
 

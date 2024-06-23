@@ -138,7 +138,8 @@ def get_info(client_socket):
     square_size = int(receive_message(client_socket))
     send_message("received", client_socket)
 
-    square_size = square_size * autodrive.calibration_variable_drive
+    #square_size = square_size * autodrive.calibration_variable_drive
+    square_size = square_size
     return robot_heading, vector_list, square_size
 
 
@@ -185,7 +186,7 @@ def run_calibration_angle(client_socket):
 
 # Run the client
 def run_client():
-    client_socket = startup_sequence("192.168.10.124")
+    client_socket = startup_sequence("192.168.23.124")
     phase_switcher(client_socket)
     # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
     # startup_thread.start()

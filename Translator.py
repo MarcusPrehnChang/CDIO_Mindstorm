@@ -91,7 +91,7 @@ class GridTranslator:
         return self.goals
 
     # [[[]]]
-    def convert_to_longer_strokes(vectorList):
+    def convert_to_longer_strokes(self, vectorList):
         longerStrokes = []
         longerX, longerY = 0, 0
 
