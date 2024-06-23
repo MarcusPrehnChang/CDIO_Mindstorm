@@ -18,12 +18,42 @@ gooseEgg = []
 number_of_minimum_balls = 11
 robot_identifier = []
 cell_width = 0
+robot_height = 40
+camera_height = 180
 
 
-def detect_Objects(frame):
+
+def calculate_position(points, aspect_ratio):
+    triangle = []
+    for i in range(len(points)):
+        new_point = calculate_offset(points[i][0][0], points[i][0][1], aspect_ratio)
+        triangle.append(new_point)
+    return np.array(triangle, dtype=np.int32)
+    
+    
+
+
+def calculate_offset(x,y,aspect_ratio):
+    middle_x = aspect_ratio[0]/2
+    middle_y = aspect_ratio[1]/2
+    ratio = (camera_height - robot_height) / camera_height
+    pos_x = middle_x - x
+    pos_y = middle_y - y
+    print("ratio", ratio)
+    print("middle_x, x ", middle_x, x)
+    temp_x = pos_x * ratio
+    temp_y = pos_y * ratio
+    print("temp_x ", temp_x)
+    actual_X = middle_x - temp_x
+    print("Actual_x ", actual_X)
+    actual_y = middle_y - temp_y
+    return actual_X, actual_y
+
+
+def detect_Objects(frame, triangle):
     find_ball(frame)
     cell_height, cell_width, bounding_box = find_box(frame)
-    frame = map_objects(bounding_box, cell_height, cell_width, frame)
+    frame = map_objects(bounding_box, cell_height, cell_width, frame, triangle)
     return frame
 
 
@@ -82,6 +112,8 @@ def find_ball(frame, min_radius=4, max_radius=20):
 def find_box(frame):
     bounding_box = find_walls(frame)
     x, y, w, h = bounding_box
+    if w < h:
+        w = int(h *1.5)
     cell_width = int(math.ceil(w / columns))
     cell_height = int(math.ceil(h / rows))
     return cell_width, cell_height, bounding_box
@@ -97,11 +129,13 @@ def robot_builder(robot_size):
 
     return robot_grid_height, robot_grid_width
 
-def map_objects(bounding_box, cell_width, cell_height, output_image):
+def map_objects(bounding_box, cell_width, cell_height, output_image, triangle):
     x, y, w, h = bounding_box
+    if w < h:
+        w = int(h *1.5)
+    print(x,y,w,h)
     print("cell width: ", cell_width)
     mask = np.zeros((h, w), dtype=np.uint8)
-    cv2.imshow('Image given to map_objects', output_image)
 
     for wall in walls:
         cv2.drawContours(mask, [wall], -1, 255, thickness=cv2.FILLED, offset=(-x, -y))
@@ -111,8 +145,10 @@ def map_objects(bounding_box, cell_width, cell_height, output_image):
         cv2.drawContours(mask, [ball], -1, 155, thickness=cv2.FILLED, offset=(-x, -y))
     for ball in gooseEgg:
         cv2.drawContours(mask, [ball], -1, 20, thickness=cv2.FILLED, offset=(-x, -y))
-    for robot in robot_identifier:
-        cv2.drawContours(mask, [robot], -1, 75, thickness=cv2.FILLED, offset=(-x, -y))
+    for robot in triangle:
+        cv2.drawContours(mask, [triangle], -1, 75, thickness=cv2.FILLED, offset=(-x, -y))
+        cv2.drawContours(output_image, [triangle], -1, 75, thickness=cv2.FILLED)
+
     robot_size = 0
 
     for i in range(rows + 1):
@@ -121,14 +157,12 @@ def map_objects(bounding_box, cell_width, cell_height, output_image):
         cv2.line(mask, start_point, end_point, (143),1)
 
     for j in range(columns + 1):
-        print(j)
-        print("length of rows", columns, " current width ", j*cell_width, " max width ", w)
         start_point = (j * cell_width, 0)
         end_point = (j * cell_width, h)
         cv2.line(mask, start_point, end_point, (143), 1)
 
     cv2.imshow('Shape masked grid', mask)
-
+    cv2.imshow('Image given to map_objects', output_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows
     for row in range(rows):
@@ -370,9 +404,10 @@ def get_info_from_camera():
     reset_global_values()
 
     # Image Capture
-    input_image = cv2.resize(take_picture(), (1280, 720))
+    input_image = cv2.resize(cv2.imread('images/Robot_in_field.jpg'), (1280, 720))
 
     newFrame, points, contour = find_triangle(input_image)
+    new_points = calculate_position(points, (1280,720))
     robot_identifier.append(contour)
     if points is not None:
         vec = get_orientation(input_image, points)
@@ -382,7 +417,7 @@ def get_info_from_camera():
     if input_image is None:
         print("Error: Could not open or read the image")
         return
-    frame = detect_Objects(input_image)
+    frame = detect_Objects(input_image, new_points)
     grid_translator = GridTranslator(arr)
     grid_translator.translate()
     translated_goals, translated_high, translated_start = grid_translator.get_info()
@@ -396,24 +431,27 @@ def get_info_from_camera():
 def test():
     # frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
 
-    frame = cv2.imread('images/thisistheone.jpg')
+    frame = cv2.resize(cv2.imread('images/Robot_in_field.jpg'), (1280, 720))
 
     new_frame, points, contour = find_triangle(frame)
-    robot_identifier.append(contour)
+    calculate_position(points, (1280,720))
+    print(points)
+    new_points = calculate_position(points, (1280,720))
+    robot_identifier = new_points
     vec = get_orientation(frame, points)
-
+    detect_Objects(frame, robot_identifier)
     grid_translator = GridTranslator(arr)
     grid_translator.translate()
     translated_goals, translated_high, translated_start = grid_translator.get_info()
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
 
-    vectors = grid_translator.make_list_of_lists(path)
+    #vectors = grid_translator.make_list_of_lists(path)
 
-    vectorlist = grid_translator.make_vectors(vectors)
-    print("vectors", vectorlist)
-    cv2.imshow('frame', new_frame)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    #vectorlist = grid_translator.make_vectors(vectors)
+    #print("vectors", vectorlist)
+    #cv2.imshow('frame', new_frame)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
 
-
+get_info_from_camera()

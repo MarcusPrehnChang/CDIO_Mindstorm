@@ -5,10 +5,15 @@ import server
 from autodrive import calibration_move
 import pathFinder
 import Translator
+import math
 
 robot = None
 server_socket = None
-
+robot_height = None
+robot_width = None
+triangle_base = None
+triangle_bottom_offset = None
+triangle_top_offset = None
 
 class phases(Enum):
     Startup_phase = 1,
