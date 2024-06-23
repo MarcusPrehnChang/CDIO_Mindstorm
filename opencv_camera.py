@@ -121,8 +121,6 @@ def map_objects(bounding_box, cell_width, cell_height, output_image):
         cv2.line(mask, start_point, end_point, (143),1)
 
     for j in range(columns + 1):
-        print(j)
-        print("length of rows", columns, " current width ", j*cell_width, " max width ", w)
         start_point = (j * cell_width, 0)
         end_point = (j * cell_width, h)
         cv2.line(mask, start_point, end_point, (143), 1)
@@ -344,7 +342,7 @@ def print_grid(grid):
 
 
 def take_picture():
-    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     ret, frame = cap.read()
 
     return frame
@@ -397,7 +395,7 @@ def get_info_from_camera():
 def test():
     # frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
 
-    frame = cv2.imread('images/thisistheone.jpg')
+    frame = take_picture()
 
     new_frame, points, contour = find_triangle(frame)
     robot_identifier.append(contour)
