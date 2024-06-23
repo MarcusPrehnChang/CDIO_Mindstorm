@@ -94,7 +94,6 @@ def run_calibration_sequence(robot):
 
 # Task is to take frames for left and right angle with the robot
 def run_calibration_angle_sequence(robot):
-    send_message("calibration phase", robot)
     message = receive_message(robot)
     if message.lower().strip() == "calibrate ready":
         f1_left = opencv_camera.take_picture()
@@ -102,7 +101,7 @@ def run_calibration_angle_sequence(robot):
         message = receive_message(robot)
         if message.lower().strip() == "calibration left done":
             f2_left = opencv_camera.take_picture()
-            send_message("calibration right", message)
+            send_message("calibration right", robot)
             message = receive_message(robot)
             if message.lower().strip() == "calibration right done":
                 f2_right = opencv_camera.take_picture()

@@ -18,11 +18,11 @@ small_motor = Motor(Port.B)
 
 # Create a DriveBase object with the initialized motors
 # Adjust the wheel diameter and axle track according to our robot design
-robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=110)
+robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=115)
 # robot.settings(straight_speed=200, straight_acceleration=100, turn_rate=100)
 
 
-gyro_sensor = GyroSensor(Port.S2)
+gyro_sensor = GyroSensor(Port.S1)
 
 square_size = 20
 calibration_variable_drive = 1
@@ -137,11 +137,11 @@ def calibration_move():
 
 
 def calibration_turn_left():
-    get_angle_to_turn([1,0], [0,1])
+    turn(get_angle_to_turn([1, 0], [0, 1]), 50)
 
 
 def calibration_turn_right():
-    get_angle_to_turn([0,1], [1,0])
+    turn(get_angle_to_turn([0, 1], [1, 0]), 50)
 
 
 def pick_up_ball():
@@ -157,8 +157,8 @@ def set_calibration_variable_drive(new_calibration_variable):
 def set_calibration_variable_angle(angle_variable_right, angle_variable_left):
     global calibration_variable_angle_right
     global calibration_variable_angle_left
-    calibration_variable_angle_right = angle_variable_right
-    calibration_variable_angle_left = angle_variable_left
+    calibration_variable_angle_right = float(angle_variable_right)
+    calibration_variable_angle_left = float(angle_variable_left)
 
 
 # Stop the robot

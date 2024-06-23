@@ -150,12 +150,14 @@ def run_calibration_angle(client_socket):
     send_message("calibrate ready", client_socket)
     message = receive_message(client_socket)
     if message.lower().strip() == "calibration left":
+        print("Before Calibration Left")
         autodrive.calibration_turn_left()
-        send_message("calibration left done")
+        print("After Calibration Left")
+        send_message("calibration left done", client_socket)
         message = receive_message(client_socket)
         if message.lower().strip() == "calibration right":
             autodrive.calibration_turn_right()
-            send_message("calibration right done")
+            send_message("calibration right done", client_socket)
             message = receive_message(client_socket)
             if message.lower().strip() == "calibration done":
                 send_message("Received", client_socket)
@@ -164,10 +166,10 @@ def run_calibration_angle(client_socket):
                 angle_right = receive_message(client_socket)
                 send_message("Received", client_socket)
                 if receive_message(client_socket) == "Done with calibration":
-                    send_message("Setting up angle calibration", client_socket)
                     autodrive.set_calibration_variable_angle(angle_right, angle_left)
                     send_message("Done applying angles", client_socket)
-                    phase_switcher(client_socket)
+                    if receive_message(client_socket) == "Received":
+                        phase_switcher(client_socket)
 
 
 

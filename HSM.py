@@ -89,9 +89,13 @@ def calculate_turn(first_frame, second_frame):
     vec2_distance = math.sqrt(vec2[0] ** 2 + vec2[1] ** 2)
 
     # Vector Angle
-    true_vector_angle = math.acos(vector_product / (vec1_distance * vec2_distance))
+    true_vector_angle = math.degrees(math.acos(vector_product / (vec1_distance * vec2_distance)))
 
-    calibration_difference = abs(true_vector_angle / 90)
+    print("True Vector Angle0", true_vector_angle)
+
+    calibration_difference = abs(90 / true_vector_angle)
+
+    print("Calibration difference: ", calibration_difference)
 
     return calibration_difference
 
@@ -130,6 +134,8 @@ def run_robot_calibration_angle():
             server.send_message(str(calibration_right), robot)
             if server.receive_message(robot) == "Received":
                 server.send_message("Done with calibration", robot)
+                if server.receive_message(robot) == "Done applying angles":
+                    server.send_message("Received", robot)
 
 
 
