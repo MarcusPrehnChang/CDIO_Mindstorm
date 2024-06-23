@@ -139,7 +139,7 @@ def get_info(client_socket):
     send_message("received", client_socket)
 
     #square_size = square_size * autodrive.calibration_variable_drive
-    square_size = square_size
+    square_size = square_size * 1.01
     return robot_heading, vector_list, square_size
 
 

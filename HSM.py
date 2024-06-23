@@ -67,15 +67,9 @@ def calibration_distance(first_frame, second_frame):
 
 
 def calculate_turn(first_frame, second_frame):
-    # Detect objects first frame
-    opencv_camera.detect_Objects(first_frame)
-
     # Find Triangle and Vector for first frame
     triangle1, points1, contour1 = opencv_camera.find_triangle(first_frame)
     vec1 = opencv_camera.get_orientation(first_frame, points1)
-
-    # Detect objects second frame
-    opencv_camera.detect_Objects(second_frame)
 
     # Find Triangle and Vector for second frame
     triangle2, points2, contour2 = opencv_camera.find_triangle(second_frame)

@@ -156,10 +156,10 @@ def map_objects(bounding_box, cell_width, cell_height, output_image, triangle):
         end_point = (j * cell_width, h)
         cv2.line(mask, start_point, end_point, (143), 1)
 
-    cv2.imshow('Shape masked grid', mask)
-    cv2.imshow('Image given to map_objects', output_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows
+    #cv2.imshow('Shape masked grid', mask)
+    #cv2.imshow('Image given to map_objects', output_image)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows
     for row in range(rows):
         for col in range(columns):
             cell_x_start = col * cell_width
@@ -200,9 +200,9 @@ def find_walls(frame):
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     highest_size = 0
     largest_contour = None
-    cv2.imshow("masked wall image", mask)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows
+    #cv2.imshow("masked wall image", mask)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows
 
     for contour in contours:
         x2, y2, w2, h2 = cv2.boundingRect(contour)
@@ -240,8 +240,8 @@ def find_triangle(
     mask = cv2.erode(mask, kernel, iterations=1)
     mask = cv2.dilate(mask, kernel, iterations=1)
 
-    cv2.imshow("mask", mask)
-    cv2.waitKey(0)
+    #cv2.imshow("mask", mask)
+    #cv2.waitKey(0)
 
     points = []
 
@@ -450,4 +450,4 @@ def test():
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
 
-get_info_from_camera()
+#get_info_from_camera()
