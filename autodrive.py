@@ -8,6 +8,8 @@ from pybricks.parameters import Port
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait
 
+from client import get_new_robot_heading
+
 # Initialize the EV3 Brick
 ev3 = EV3Brick()
 
@@ -83,14 +85,23 @@ def navigate_to_ball(vector_list, square_size, robot_heading):
         # if stop_flag:
         # break
         # Turn the robot to the correct angle
-        turn(angle_to_turn, 50)
+        turn(angle_to_turn, 75)
+
+        turn_again = True
+        while turn_again:
+            new_heading = get_new_robot_heading()
+            angle_to_turn = get_angle_to_turn(new_heading, vector)
+            if angle_to_turn +- 1:
+                turn_again = False
+            else:
+                turn(angle_to_turn, 75)
         # if stop_flag:
         # break
         # Drive the robot to the target distance
-        drive(distance_to_drive, 50)
+        drive(distance_to_drive, 75)
 
         # Update the robot's position
-        robot_heading = vector
+        robot_heading = get_new_robot_heading()
 
     return robot_heading
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env pybricks-micropython
 import socket
-
-import autodrive
 from autodrive import auto_drive
+import autodrive
 
 
 def connect_to_server(hostname):
@@ -36,6 +35,8 @@ stop_flag = False
 emergency_stop_listener = True
 # Global variable to stop the run
 run_is_not_done = True
+
+client_socket = None
 
 
 def listen_for_emergency_stop(client_socket):
@@ -71,6 +72,7 @@ def startup_sequence(hostname):
     global emergency_stop_listener
     global run_is_not_done
     global stop_flag
+    global client_socket
 
     # Connect to the server
     client_socket = connect_to_server(hostname)
@@ -182,6 +184,13 @@ def run_calibration_angle(client_socket):
                     if receive_message(client_socket) == "Received":
                         phase_switcher(client_socket)
 
+
+def get_new_robot_heading():
+    global client_socket
+    send_message("get new robot heading", client_socket)
+    robot_heading = eval(receive_message(client_socket))
+    send_message("received", client_socket)
+    return robot_heading
 
 
 # Run the client

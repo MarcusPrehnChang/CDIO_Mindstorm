@@ -53,7 +53,6 @@ def calibration_distance(first_frame, second_frame):
     first_triangle, first_points, contour = opencv_camera.find_triangle(first_frame)
 
     a1, b1, first_tip_of_tri = opencv_camera.find_abc(first_points)
-    print(first_tip_of_tri)
 
     second_triangle, second_points, contour = opencv_camera.find_triangle(second_frame)
     a2, b2, second_tip_of_tri = opencv_camera.find_abc(second_points)
@@ -86,11 +85,7 @@ def calculate_turn(first_frame, second_frame):
     # Vector Angle
     true_vector_angle = math.degrees(math.acos(vector_product / (vec1_distance * vec2_distance)))
 
-    print("True Vector Angle0", true_vector_angle)
-
     calibration_difference = abs(90 / true_vector_angle)
-
-    print("Calibration difference: ", calibration_difference)
 
     return calibration_difference
 
@@ -133,7 +128,6 @@ def run_robot_calibration_angle():
                     server.send_message("Received", robot)
 
 
-
 def run_robot():
     server.send_message("robot phase", robot)
     message = server.receive_message(robot)
@@ -153,6 +147,9 @@ def run_robot():
                 server.send_message("continue", robot)
         server.send_message("run is done", robot)
         server.receive_message(robot)
+
+
+
 
 
 def emergency_stop():

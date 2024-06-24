@@ -424,6 +424,19 @@ def get_info_from_camera():
     return longerVectorList, vec
 
 
+def get_robot_heading():
+    input_image = cv2.resize(take_picture(), (1280, 720))
+
+    newFrame, points, contour = find_triangle(input_image)
+    new_points = calculate_position(points, (1280, 720))
+    robot_identifier.append(contour)
+    if points is not None:
+        vec = get_orientation(input_image, points)
+        return vec
+    else:
+        print("error finding triangle")
+        return None
+
 def test():
     # frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
 

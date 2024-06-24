@@ -71,10 +71,19 @@ def run_sequence(vector_list, square_size, robot):
     message = receive_message(robot)
     if message.lower().strip() == "received":
         send_message(square_size, robot)
-        message = receive_message(robot)
-        if message.lower().strip() == "run is done":  # error handling
-            send_message("continue", robot)
+
+        in_middle_of_run = True
+        while in_middle_of_run:
             message = receive_message(robot)
+            if message.lower().strip() == "get new robot heading":
+                send_message(str(opencv_camera.get_robot_heading()), robot)
+                message = receive_message(robot)
+                if message.lower().strip() == "received":
+                    continue
+                elif message.lower().strip() == "run is done":
+                    in_middle_of_run = False
+        send_message("continue", robot)
+        message = receive_message(robot)
 
 
 # send emergency stop message to robot to make it stop
@@ -110,6 +119,13 @@ def run_calibration_angle_sequence(robot):
                 f2_right = opencv_camera.take_picture()
 
                 return f1_left, f2_left, f2_left, f2_right
+
+
+def send_new_robot_heading(robot, new_heading):
+    send_message(new_heading, robot)
+    message = receive_message(robot)
+    if message.lower().strip() == "received":
+        return
 
 
 def emergency_stop_listener():
