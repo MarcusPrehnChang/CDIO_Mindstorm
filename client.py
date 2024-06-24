@@ -106,7 +106,7 @@ def run_loop_sequence(client_socket):
                 send_message("received", client_socket)
                 message = receive_message(client_socket)
                 square_size = int(message)
-                robot_heading = auto_drive(vector_list, square_size, robot_heading)
+                robot_heading = auto_drive(vector_list, square_size, robot_heading, get_new_robot_heading())
                 # Start the listen_for_emergency_stop thread
                 # listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
                 # Start the autodrive thread
@@ -117,8 +117,6 @@ def run_loop_sequence(client_socket):
                 # Wait for the autodrive thread to finish
                 # autodrive_thread.join()
                 # Stop the listen_for_emergency_stop thread to receive new messages
-
-
 
                 emergency_stop_listener = False
 
