@@ -64,6 +64,8 @@ def phase_switcher(client_socket):
         run_loop_sequence(client_socket)
     elif received_message.lower().strip() == "emergency phase":
         pass
+    elif received_message.lower().strip() == "goal phase":
+        run_offload_sequence(client_socket)
 
 
 def startup_sequence(hostname):
@@ -161,9 +163,7 @@ def run_calibration_angle(client_socket):
     send_message("calibrate ready", client_socket)
     message = receive_message(client_socket)
     if message.lower().strip() == "calibration left":
-        print("Before Calibration Left")
         autodrive.calibration_turn_left()
-        print("After Calibration Left")
         send_message("calibration left done", client_socket)
         message = receive_message(client_socket)
         if message.lower().strip() == "calibration right":
@@ -181,6 +181,22 @@ def run_calibration_angle(client_socket):
                     send_message("Done applying angles", client_socket)
                     if receive_message(client_socket) == "Received":
                         phase_switcher(client_socket)
+
+
+# Offload Sequence
+def run_offload_sequence(client_socket):
+    if client_socket.message.lower().strip() == "goal phase":
+        send_message("Received", client_socket)
+        path = receive_message(client_socket)
+        send_message("Received", client_socket)
+        heading = receive_message(client_socket)
+        send_message("Received", client_socket)
+        if client_socket.message.lower().strip() == "offload calculating done":
+            autodrive.navigate_to_ball(path, robot_heading=heading)
+            send_message("At position", client_socket)
+            if client_socket.message.lower().strip() == "offload balls":
+                send_message("Unloading balls", client_socket)
+                autodrive.offload_ball()
 
 
 

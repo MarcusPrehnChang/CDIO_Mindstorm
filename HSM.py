@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 from enum import Enum
 import opencv_camera
@@ -15,11 +16,13 @@ triangle_base = None
 triangle_bottom_offset = None
 triangle_top_offset = None
 
+
 class phases(Enum):
     Startup_phase = 1,
     Calibration_phase = 2,
     Robot_phase = 3,
-    emergency_phase = 4
+    emergency_phase = 4,
+    goal_phase = 5
 
 
 def main():
@@ -40,6 +43,9 @@ def main():
 
         elif current_phase == phases.emergency_phase:
             emergency_stop()
+
+        elif current_phase == phases.goal_phase:
+            run_server_goal()
 
 
 def startup():
@@ -132,6 +138,61 @@ def run_robot_calibration_angle():
                 if server.receive_message(robot) == "Done applying angles":
                     server.send_message("Received", robot)
 
+
+# Calculate Heading and Vectors to goal
+def get_path_to_goal(frame):
+    opencv_camera.reset_global_values()
+    # Calculate Robot Heading
+    # Find Triangle
+    new_frame, points, contour = opencv_camera.find_triangle(cv2.resize(frame, (1280, 720)))
+    new_points = opencv_camera.calculate_position(points, (1280, 720))
+
+    opencv_camera.robot_identifier.append(contour)
+
+    if points is not None:
+        heading_vector = opencv_camera.get_orientation(frame, points)
+    else:
+        print("Error finding triangle")
+        return
+
+    frame = opencv_camera.detect_Objects(frame, new_points)
+
+    # Get the camera to analyse it position
+    grid_translator = Translator.GridTranslator(opencv_camera.arr)
+    grid_translator.translate()
+    goals, high, start_position = grid_translator.get_info()
+
+    # Find route.
+    path = pathFinder.a_star(opencv_camera.arr, start_position, [(30, 10)], (2, 2))
+
+    # Convert Path to vectors
+    vector = Translator.GridTranslator.make_list_of_lists(path)
+
+    # Insert vectors to a list of list.
+    list_of_vectors = Translator.GridTranslator.make_vectors(vector)
+
+    # Make clean the vectors for better movement
+    longer_vector_list = Translator.GridTranslator.convert_to_longer_strokes(list_of_vectors)
+
+    return longer_vector_list, heading_vector
+
+
+# Handle the information that should be sent to the server component
+def run_server_goal():
+    # The Robot has to be stopped before the picture is being taken
+    server.send_message("goal phase", robot)
+    if server.receive_message(robot) == "Received":
+        frame = opencv_camera.take_picture()
+        path, heading = get_path_to_goal(frame)
+        server.send_message(path, robot)
+        if server.receive_message(robot) == "Received":
+            server.send_message(heading, robot)
+            if server.receive_message(robot) == "Received":
+                server.send_message("offload calculating done", robot)
+                if server.receive_message(robot) == "At position":
+                    server.send_message("offload balls", robot)
+                    if server.receive_message(robot) == "Unloading balls":
+                        server.send_message("Received")
 
 
 def run_robot():

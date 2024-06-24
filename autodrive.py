@@ -149,6 +149,11 @@ def pick_up_ball():
     wait(100)
 
 
+def offload_ball():
+    small_motor.run(-400)
+    wait(100)
+
+
 def set_calibration_variable_drive(new_calibration_variable):
     global calibration_variable_drive
     calibration_variable_drive = new_calibration_variable
@@ -159,6 +164,7 @@ def set_calibration_variable_angle(angle_variable_right, angle_variable_left):
     global calibration_variable_angle_left
     calibration_variable_angle_right = float(angle_variable_right)
     calibration_variable_angle_left = float(angle_variable_left)
+
 
 
 # Stop the robot
