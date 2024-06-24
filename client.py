@@ -129,6 +129,8 @@ def run_loop_sequence(client_socket):
                     send_message("received", client_socket)
                     # Reset the emergency stop listener
                     stop_flag = False
+        phase_switcher(client_socket)
+
 
 
 # Get the robot heading, vector list, and square size

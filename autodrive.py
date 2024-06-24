@@ -22,7 +22,7 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=115)
 # robot.settings(straight_speed=200, straight_acceleration=100, turn_rate=100)
 
 
-gyro_sensor = GyroSensor(Port.S2)
+gyro_sensor = GyroSensor(Port.S1)
 
 square_size = 20
 calibration_variable_drive = 1
@@ -73,12 +73,13 @@ def drive(distance, robot_speed):
 def navigate_to_ball(vector_list, square_size, robot_heading):
     for vector in vector_list:
         angle_to_turn = get_angle_to_turn(robot_heading, vector)
+        '''
         # Based on it what way it should turn
         if angle_to_turn < 0:
             angle_to_turn = angle_to_turn * calibration_variable_angle_left
         else:
             angle_to_turn = angle_to_turn * calibration_variable_angle_right
-
+        '''
         distance_to_drive = get_distance_to_drive(vector, square_size)
         # if stop_flag:
         # break

@@ -253,6 +253,7 @@ def find_triangle(
         if len(approx) == 3:
             [area, triangle] = cv2.minEnclosingTriangle(i)
             if area > area_size:
+                print("Found Triangle Area: ", area)
                 frame = cv2.drawContours(frame, [i], -1, (255, 0, 0), 3)
                 points = triangle
                 contour = i
@@ -297,7 +298,7 @@ def get_orientation(frame, points):
 
     # Calculate the vector (direction the robot is going)
     # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
-    V = [float(Mx - x3), float((My - y3) * -1)]
+    V = [float((Mx - x3) * -1), float((My - y3) * -1)]
     return V
     # except:
     #    return inc_sen_triangle(frame)

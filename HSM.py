@@ -40,12 +40,13 @@ def main():
 
         elif current_phase == phases.Robot_phase:
             run_robot()
-
-        elif current_phase == phases.emergency_phase:
-            emergency_stop()
+            current_phase == phases.goal_phase
 
         elif current_phase == phases.goal_phase:
             run_server_goal()
+
+        elif current_phase == phases.emergency_phase:
+            emergency_stop()
 
 
 def startup():
@@ -78,6 +79,7 @@ def calculate_turn(first_frame, second_frame):
     vec1 = opencv_camera.get_orientation(first_frame, points1)
 
     # Find Triangle and Vector for second frame
+    print("Inside the calculate_turn2")
     triangle2, points2, contour2 = opencv_camera.find_triangle(second_frame)
     vec2 = opencv_camera.get_orientation(second_frame, points2)
 
@@ -144,13 +146,14 @@ def get_path_to_goal(frame):
     opencv_camera.reset_global_values()
     # Calculate Robot Heading
     # Find Triangle
+    temp_list = []
     new_frame, points, contour = opencv_camera.find_triangle(cv2.resize(frame, (1280, 720)))
     new_points = opencv_camera.calculate_position(points, (1280, 720))
-
+    temp_list.append(temp_list)
     opencv_camera.robot_identifier.append(contour)
 
     if points is not None:
-        heading_vector = opencv_camera.get_orientation(frame, points)
+        heading_vector = opencv_camera.get_orientation(frame, temp_list)
     else:
         print("Error finding triangle")
         return
@@ -207,10 +210,10 @@ def run_robot():
         square_size = int(square_size)
         iterator = 0
         server.start_of_run_sequence(str(robot_heading), str(vector_list[iterator]), str(square_size), robot)
-        while iterator != len(vector_list):
+        while iterator - 1 != len(vector_list):
             iterator += 1
             server.run_sequence(str(vector_list[iterator]), str(square_size), robot)
-            if(iterator != len(vector_list)):
+            if iterator != len(vector_list):
                 server.send_message("continue", robot)
         server.send_message("run is done", robot)
         server.receive_message(robot)
