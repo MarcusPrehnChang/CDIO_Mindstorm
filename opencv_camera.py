@@ -220,7 +220,7 @@ def find_walls(frame):
 
 def find_triangle(
         frame,
-        area_size=100,
+        area_size=200,
         lower_green=np.array([25, 25, 25]),
         upper_green=np.array([100, 255, 255])
 ):
@@ -262,28 +262,34 @@ def find_triangle(
 
 def find_abc(points):
     # Init the points to x and y
-    y1, x1 = points[0][0]
-    y2, x2 = points[1][0]
-    y3, x3 = points[2][0]
+    point_1 = points[0][0]
+    y1, x1 = point_1
+    point_2 = points[0][1]
+    y2, x2 = point_2
+    point_3 = points[0][2]
+    y3, x3= point_3
 
     # Calculate the distance between points using the Afstandsformlen
     length1 = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     length2 = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
     length3 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
+    print("crash report 3: ", length1, length2, length3)
 
     # Determine which point is C (the return is in this order A, B, C)
-    if math.isclose(length1, length2, abs_tol=10):
-        return points[1][0], points[2][0], points[0][0]
-    elif math.isclose(length3, length2, abs_tol=10):
-        return points[0][0], points[1][0], points[2][0]
-    elif math.isclose(length1, length3, abs_tol=10):
-        return points[0][0], points[2][0], points[1][0]
+    if math.isclose(length1, length2, abs_tol=15):
+        return points[0][1], points[0][2], points[0][0]
+    elif math.isclose(length3, length2, abs_tol=15):
+        return points[0][0], points[0][1], points[0][2]
+    elif math.isclose(length1, length3, abs_tol=15):
+        return points[0][0], points[0][2], points[0][1]
     else:
         return None, None, None
 
 
 def get_orientation(frame, points):
+    print("crash report 2", points)
     # Find A,B and C points
+
     A, B, C = find_abc(points)
     print(A, B, C)
     # Init the points to x and y
@@ -297,7 +303,7 @@ def get_orientation(frame, points):
 
     # Calculate the vector (direction the robot is going)
     # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
-    V = [float(Mx - x3), float((My - y3) * -1)]
+    V = [float((Mx - x3) * -1), float((My - y3) * -1)]
     return V
     # except:
     #    return inc_sen_triangle(frame)
@@ -397,16 +403,17 @@ def reset_global_values():
 
 def get_info_from_camera():
     reset_global_values()
-
+    temp_list = []
     # Image Capture
     input_image = cv2.resize(take_picture(), (1280, 720))
 
     newFrame, points, contour = find_triangle(input_image)
     new_points = calculate_position(points, (1280,720))
     robot_identifier.append(contour)
-    if points is not None:
+    if new_points is not None:
+        temp_list.append(new_points)
         print("Points: ", points)
-        vec = get_orientation(input_image, points)
+        vec = get_orientation(input_image, temp_list)
     else:
         print("error finding triangle")
 
@@ -427,15 +434,22 @@ def get_info_from_camera():
 
 def get_robot_heading():
     print("Getting robot heading")
-    input_image = cv2.resize(take_picture(), (1280, 720))
-    newFrame, points, contour = find_triangle(input_image)
-    if points is not None:
-        vec = get_orientation(input_image, points)
-        print("Robot heading found", vec)
-        return vec
-    else:
-        print("error finding triangle")
-        return None
+    while True:
+        input_image = cv2.resize(take_picture(), (1280, 720))
+        newFrame, points, contour = find_triangle(input_image)
+        new_points = calculate_position(points, (1280, 720))
+        temp_list = []
+        cv2.imshow("triangle?", newFrame)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        print("crash report", points)
+        if new_points[0] is not None:
+            temp_list.append(new_points)
+            vec = get_orientation(input_image, temp_list)
+            print("Robot heading found", vec)
+            return vec
+        else:
+            print("error finding triangle")
 
 
 def test():
@@ -445,7 +459,6 @@ def test():
 
     new_frame, points, contour = find_triangle(frame)
     calculate_position(points, (1280,720))
-    print(points)
     new_points = calculate_position(points, (1280,720))
     robot_identifier = new_points
     vec = get_orientation(frame, points)

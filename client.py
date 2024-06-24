@@ -64,8 +64,9 @@ def listen_for_emergency_stop(client_socket):
 def phase_switcher(client_socket):
     received_message = receive_message(client_socket)
     if received_message.lower().strip() == "calibration phase":
-        run_calibration(client_socket)
-        run_calibration_angle(client_socket)
+        print("yolo")
+        # run_calibration(client_socket)
+        # run_calibration_angle(client_socket)
     elif received_message.lower().strip() == "robot phase":
         run_loop_sequence(client_socket)
     elif received_message.lower().strip() == "emergency phase":
@@ -98,7 +99,9 @@ def run_loop_sequence(client_socket):
     message = receive_message(client_socket)
     if message.lower().strip() == "done with info":
         send_message("received", client_socket)
-        auto_drive(vector_list, square_size, robot_heading) #Kør til første bold
+        for vectors in vector_list:
+            autodrive.pick_up_ball()
+            navigate_to_ball(vectors, square_size, robot_heading)
         send_message("run is done", client_socket)
         continuation_message = receive_message(client_socket)
         if continuation_message == "continue":
@@ -109,7 +112,9 @@ def run_loop_sequence(client_socket):
                 send_message("received", client_socket)
                 message = receive_message(client_socket)
                 square_size = int(message)
-                auto_drive(vector_list, square_size, robot_heading)
+                for vectors in vector_list:
+                    autodrive.pick_up_ball()
+                    navigate_to_ball(vectors, square_size, robot_heading)
 
 
                 # Start the listen_for_emergency_stop thread
@@ -203,14 +208,18 @@ def turn_till_precise(vector):
     turn_again = True
     while turn_again:
         new_heading = get_new_robot_heading()
+        autodrive.wait(200)
         print("current heading: ", new_heading)
         angle_to_turn = autodrive.get_angle_to_turn(new_heading, vector)
-        if angle_to_turn + - 1:
-            turn_again = False
+        if - 2.5 < angle_to_turn < 2.5:
+            print("AGNLE GOOD ENOUGH")
             break
         else:
             print("turning : ", angle_to_turn)
-            autodrive.turn(angle_to_turn, 75)
+            if abs(angle_to_turn) < 10:
+                autodrive.turn(angle_to_turn, 50)
+            else:
+                autodrive.turn(angle_to_turn, 75)
 
 
 def navigate_to_ball(vector_list, square_size, robot_heading):

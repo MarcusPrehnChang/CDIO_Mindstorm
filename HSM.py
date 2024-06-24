@@ -31,8 +31,8 @@ def main():
             current_phase = phases.Calibration_phase
 
         elif current_phase == phases.Calibration_phase:
-            run_robot_calibration()
-            run_robot_calibration_angle()
+            #run_robot_calibration()
+            #run_robot_calibration_angle()
             current_phase = phases.Robot_phase
 
         elif current_phase == phases.Robot_phase:
@@ -49,13 +49,18 @@ def startup():
 
 
 def calibration_distance(first_frame, second_frame):
+    temp_list = []
     cell_width, cell_height, bounding_box = opencv_camera.find_box(first_frame)
     first_triangle, first_points, contour = opencv_camera.find_triangle(first_frame)
+    new_points = opencv_camera.calculate_position(first_points, (1280, 720))
+    temp_list.append(new_points)
 
-    a1, b1, first_tip_of_tri = opencv_camera.find_abc(first_points)
-
+    a1, b1, first_tip_of_tri = opencv_camera.find_abc(temp_list)
+    temp_list2 = []
     second_triangle, second_points, contour = opencv_camera.find_triangle(second_frame)
-    a2, b2, second_tip_of_tri = opencv_camera.find_abc(second_points)
+    new_points2 = opencv_camera.calculate_position(second_points, (1280, 720))
+    temp_list2.append(new_points2)
+    a2, b2, second_tip_of_tri = opencv_camera.find_abc(temp_list2)
 
     first_tip_difference = first_tip_of_tri[0] - first_tip_of_tri[1]
     second_tip_difference = second_tip_of_tri[0] - second_tip_of_tri[1]
@@ -67,8 +72,11 @@ def calibration_distance(first_frame, second_frame):
 
 def calculate_turn(first_frame, second_frame):
     # Find Triangle and Vector for first frame
+    temp_list1 = []
     triangle1, points1, contour1 = opencv_camera.find_triangle(first_frame)
-    vec1 = opencv_camera.get_orientation(first_frame, points1)
+    new_points2 = opencv_camera.calculate_position(points1, (1280, 720))
+    temp_list1.append(new_points2)
+    vec1 = opencv_camera.get_orientation(first_frame, temp_list1)
 
     # Find Triangle and Vector for second frame
     triangle2, points2, contour2 = opencv_camera.find_triangle(second_frame)
