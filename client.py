@@ -1,8 +1,11 @@
 #!/usr/bin/env pybricks-micropython
 import socket
 from autodrive import auto_drive
-import autodrive
-
+from autodrive import calibration_move
+from autodrive import set_calibration_variable_drive
+from autodrive import set_calibration_variable_angle
+from autodrive import calibration_turn_right
+from autodrive import calibration_turn_left
 
 def connect_to_server(hostname):
     # Name and port of the host
@@ -149,14 +152,14 @@ def run_calibration(client_socket):
     send_message("calibrate ready", client_socket)
     message = receive_message(client_socket)
     if message.lower().strip() == "calibration move":
-        autodrive.calibration_move()
+        calibration_move()
         send_message("calibration move done", client_socket)
         message = receive_message(client_socket)
         if message.lower().strip() == "calibration done":
             send_message("Received", client_socket)
             calibration_difference = receive_message(client_socket)
             send_message("Received", client_socket)
-            autodrive.set_calibration_variable_drive(float(calibration_difference))
+            set_calibration_variable_drive(float(calibration_difference))
 
 
 def run_calibration_angle(client_socket):
@@ -164,12 +167,12 @@ def run_calibration_angle(client_socket):
     message = receive_message(client_socket)
     if message.lower().strip() == "calibration left":
         print("Before Calibration Left")
-        autodrive.calibration_turn_left()
+        calibration_turn_left()
         print("After Calibration Left")
         send_message("calibration left done", client_socket)
         message = receive_message(client_socket)
         if message.lower().strip() == "calibration right":
-            autodrive.calibration_turn_right()
+            calibration_turn_right()
             send_message("calibration right done", client_socket)
             message = receive_message(client_socket)
             if message.lower().strip() == "calibration done":
@@ -179,7 +182,7 @@ def run_calibration_angle(client_socket):
                 angle_right = receive_message(client_socket)
                 send_message("Received", client_socket)
                 if receive_message(client_socket) == "Done with calibration":
-                    autodrive.set_calibration_variable_angle(angle_right, angle_left)
+                    set_calibration_variable_angle(angle_right, angle_left)
                     send_message("Done applying angles", client_socket)
                     if receive_message(client_socket) == "Received":
                         phase_switcher(client_socket)
@@ -195,7 +198,7 @@ def get_new_robot_heading():
 
 # Run the client
 def run_client():
-    client_socket = startup_sequence("192.168.23.124")
+    client_socket = startup_sequence("192.168.10.209")
     phase_switcher(client_socket)
     # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
     # startup_thread.start()
