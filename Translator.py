@@ -90,10 +90,13 @@ class GridTranslator:
     def get_goals(self):
         return self.goals
 
+
     # [[[]]]
-    def convert_to_longer_strokes(self, vectorList):
+    def convert_to_longer_strokes(self, vectorList, grid, robotPosition):
         longerStrokes = []
         longerX, longerY = 0, 0
+        xAxisLength = len(grid[0])
+        yAxisLength = len(grid)
 
         for i in range(len(vectorList)):
             if len(vectorList[i]) != 1:
@@ -106,18 +109,30 @@ class GridTranslator:
                             longerY += vectorList[i][j+1][1]
                             prev = vectorList[i][j+1]
                         else:
-                            if longerX != 0:
-                                longerStrokes.append([longerX, 0])
-                            if longerY != 0:
-                                longerStrokes.append([0, longerY])
+                            if (robotPosition[0] <= (xAxisLength * 4.5/12) or robotPosition[0] >= (xAxisLength * 7.5/12)) and (robotPosition[1] <= (yAxisLength * 7.5/18) or robotPosition[0] >= (yAxisLength * 10.5/12)):
+                                if longerX != 0:
+                                    longerStrokes.append([longerX, 0])
+                                if longerY != 0:
+                                    longerStrokes.append([0, longerY])
+                            else:
+                                if longerX != 0:
+                                    longerStrokes.append([0, longerY])
+                                if longerY != 0:
+                                    longerStrokes.append([longerX, 0])
                             longerX = vectorList[i][j+1][0]
                             longerY = vectorList[i][j+1][1]
                             prev = vectorList[i][j + 1]
 
-                if longerX != 0:
-                    longerStrokes.append([longerX, 0])
-                if longerY != 0:
-                    longerStrokes.append([0, longerY])
+                if robotPosition[0] <= (xAxisLength * 5/12) or robotPosition[0] >= (xAxisLength * 7/12):
+                    if longerX != 0:
+                        longerStrokes.append([longerX, 0])
+                    if longerY != 0:
+                        longerStrokes.append([0, longerY])
+                else:
+                    if longerX != 0:
+                        longerStrokes.append([0, longerY])
+                    if longerY != 0:
+                        longerStrokes.append([longerX, 0])
                 longerX = 0
                 longerY = 0
 
