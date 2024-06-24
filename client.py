@@ -1,11 +1,13 @@
 #!/usr/bin/env pybricks-micropython
 import socket
-from autodrive import auto_drive
+
+import autodrive
 from autodrive import calibration_move
 from autodrive import set_calibration_variable_drive
 from autodrive import set_calibration_variable_angle
 from autodrive import calibration_turn_right
 from autodrive import calibration_turn_left
+
 
 def connect_to_server(hostname):
     # Name and port of the host
@@ -95,7 +97,8 @@ def run_loop_sequence(client_socket):
     robot_heading, vector_list, square_size = get_info(client_socket)
     message = receive_message(client_socket)
     if message.lower().strip() == "done with info":
-        robot_heading = auto_drive(vector_list, square_size, robot_heading)
+        send_message("received", client_socket)
+        distance_to_drive = auto_drive(vector_list, square_size, robot_heading)
         send_message("run is done", client_socket)
         continuation_message = receive_message(client_socket)
         if continuation_message == "continue":
@@ -106,7 +109,9 @@ def run_loop_sequence(client_socket):
                 send_message("received", client_socket)
                 message = receive_message(client_socket)
                 square_size = int(message)
-                robot_heading = auto_drive(vector_list, square_size, robot_heading, get_new_robot_heading())
+                robot_heading = auto_drive(vector_list, square_size, robot_heading)
+
+
                 # Start the listen_for_emergency_stop thread
                 # listen_thread = threading.Thread(target=listen_for_emergency_stop, args=(client_socket,))
                 # Start the autodrive thread
@@ -194,9 +199,37 @@ def get_new_robot_heading():
     return robot_heading
 
 
+def turn_till_precise(vector):
+    turn_again = True
+    while turn_again:
+        new_heading = get_new_robot_heading()
+        print("New heading:", new_heading)
+        angle_to_turn = autodrive.get_angle_to_turn(new_heading, vector)
+        if angle_to_turn + - 1:
+            turn_again = False
+        else:
+            autodrive.turn(angle_to_turn, 75)
+
+
+def navigate_to_ball(vector_list, square_size, robot_heading):
+    for vector in vector_list:
+        distance_to_drive = autodrive.run_one_vector_turn(robot_heading, vector)
+        turn_till_precise(vector)
+        autodrive.drive(distance_to_drive, 75)
+
+
+def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
+    for list_of_vectors in list_of_list_of_vectors:
+        autodrive.pick_up_ball()
+        distance_to_drive = navigate_to_ball(list_of_vectors, square_size, robot_heading)
+        # if stop_flag:
+        # break
+    return distance_to_drive
+
+
 # Run the client
 def run_client():
-    client_socket = startup_sequence("192.168.23.209")
+    client_socket = startup_sequence("192.168.23.184")
     phase_switcher(client_socket)
     # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
     # startup_thread.start()

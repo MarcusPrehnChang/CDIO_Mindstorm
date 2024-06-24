@@ -22,7 +22,7 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=40, axle_track=115)
 # robot.settings(straight_speed=200, straight_acceleration=100, turn_rate=100)
 
 
-gyro_sensor = GyroSensor(Port.S2)
+gyro_sensor = GyroSensor(Port.S1)
 
 square_size = 20
 calibration_variable_drive = 1
@@ -70,38 +70,21 @@ def drive(distance, robot_speed):
     robot.stop()
 
 
-def navigate_to_ball(vector_list, square_size, robot_heading, get_new_robot_heading):
-    for vector in vector_list:
-        angle_to_turn = get_angle_to_turn(robot_heading, vector)
-        # Based on it what way it should turn
-        if angle_to_turn < 0:
-            angle_to_turn = angle_to_turn * calibration_variable_angle_left
-        else:
-            angle_to_turn = angle_to_turn * calibration_variable_angle_right
+def run_one_vector_turn(robot_heading, vector):
+    angle_to_turn = get_angle_to_turn(robot_heading, vector)
+    # Based on it what way it should turn
+    if angle_to_turn < 0:
+        angle_to_turn = angle_to_turn * calibration_variable_angle_left
+    else:
+        angle_to_turn = angle_to_turn * calibration_variable_angle_right
 
-        distance_to_drive = get_distance_to_drive(vector, square_size)
-        # if stop_flag:
-        # break
-        # Turn the robot to the correct angle
-        turn(angle_to_turn, 75)
+    distance_to_drive = get_distance_to_drive(vector, square_size)
+    # if stop_flag:
+    # break
+    # Turn the robot to the correct angle
+    turn(angle_to_turn, 75)
 
-        turn_again = True
-        while turn_again:
-            new_heading = get_new_robot_heading()
-            angle_to_turn = get_angle_to_turn(new_heading, vector)
-            if angle_to_turn +- 1:
-                turn_again = False
-            else:
-                turn(angle_to_turn, 75)
-        # if stop_flag:
-        # break
-        # Drive the robot to the target distance
-        drive(distance_to_drive, 75)
-
-        # Update the robot's position
-        robot_heading = get_new_robot_heading()
-
-    return robot_heading
+    return distance_to_drive
 
 
 def get_distance_to_drive(vector, square_size):
@@ -110,6 +93,8 @@ def get_distance_to_drive(vector, square_size):
 
 
 def get_angle_to_turn(robot_heading, pointer_vector):
+    print("Robot heading:", robot_heading)
+    print("Pointer vector:", pointer_vector)
     robot_heading_distance = math.sqrt(robot_heading[0] ** 2 + robot_heading[1] ** 2)
     pointer_vector_distance = math.sqrt(pointer_vector[0] ** 2 + pointer_vector[1] ** 2)
     vector_product = robot_heading[0] * pointer_vector[0] + robot_heading[1] * pointer_vector[1]
@@ -120,15 +105,6 @@ def get_angle_to_turn(robot_heading, pointer_vector):
         angle_to_turn = -angle_to_turn
 
     return angle_to_turn
-
-
-def auto_drive(list_of_list_of_vectors, square_size, robot_heading, get_new_robot_heading):
-    for list_of_vectors in list_of_list_of_vectors:
-        pick_up_ball()
-        new_heading = navigate_to_ball(list_of_vectors, square_size, robot_heading, get_new_robot_heading())
-        # if stop_flag:
-        # break
-    return new_heading
 
 
 def calculate_square_size(amount_of_squares_length, amount_of_squares_width):

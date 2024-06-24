@@ -140,6 +140,7 @@ def run_robot():
         square_size = int(square_size)
         iterator = 0
         server.start_of_run_sequence(str(robot_heading), str(vector_list[iterator]), str(square_size), robot)
+
         while iterator != len(vector_list):
             iterator += 1
             server.run_sequence(str(vector_list[iterator]), str(square_size), robot)

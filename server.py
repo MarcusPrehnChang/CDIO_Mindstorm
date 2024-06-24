@@ -9,7 +9,7 @@ stop_flag = False
 
 def run_server():
     # Get hostname and port
-    host = "192.168.23.209"
+    host = "192.168.23.184"
     port = 5000
 
     # Get the instance of socket and start listening on host and port.
@@ -64,6 +64,7 @@ def start_of_run_sequence(robot_heading, vector_list, square_size, robot):
             if message.lower().strip() == "received":
                 send_message("done with info", robot)
                 message = receive_message(robot)
+                new_robot_heading_loop(robot)
 
 
 def run_sequence(vector_list, square_size, robot):
@@ -72,18 +73,24 @@ def run_sequence(vector_list, square_size, robot):
     if message.lower().strip() == "received":
         send_message(square_size, robot)
 
-        in_middle_of_run = True
-        while in_middle_of_run:
-            message = receive_message(robot)
-            if message.lower().strip() == "get new robot heading":
-                send_message(str(opencv_camera.get_robot_heading()), robot)
-                message = receive_message(robot)
-                if message.lower().strip() == "received":
-                    continue
-                elif message.lower().strip() == "run is done":
-                    in_middle_of_run = False
-        send_message("continue", robot)
+        new_robot_heading_loop(robot)
+
+
+def new_robot_heading_loop(robot):
+    in_middle_of_run = True
+    while in_middle_of_run:
         message = receive_message(robot)
+        if message.lower().strip() == "get new robot heading":
+            robot_heading = str(opencv_camera.get_robot_heading())
+            print("Robot heading: " + robot_heading)
+            send_message(robot_heading, robot)
+            message = receive_message(robot)
+            if message.lower().strip() == "received":
+                continue
+            elif message.lower().strip() == "run is done":
+                in_middle_of_run = False
+    send_message("continue", robot)
+    message = receive_message(robot)
 
 
 # send emergency stop message to robot to make it stop

@@ -228,7 +228,7 @@ def find_triangle(
     # Modifying the image and removing all other color than green to highlight the shape of the triangle
     mask = cv2.inRange(frame, lower_green, upper_green)
     '''
-    global robot_identifier
+    global robot_identifier, contour
     # Convert to HSV color space
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -426,17 +426,17 @@ def get_info_from_camera():
 
 
 def get_robot_heading():
+    print("Getting robot heading")
     input_image = cv2.resize(take_picture(), (1280, 720))
-
     newFrame, points, contour = find_triangle(input_image)
-    new_points = calculate_position(points, (1280, 720))
-    robot_identifier.append(contour)
     if points is not None:
         vec = get_orientation(input_image, points)
+        print("Robot heading found", vec)
         return vec
     else:
         print("error finding triangle")
         return None
+
 
 def test():
     # frame = cv2.resize(cv2.imread('images/Triangletest2.jpg'), (1000, 1025))
