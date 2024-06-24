@@ -405,6 +405,7 @@ def get_info_from_camera():
     new_points = calculate_position(points, (1280,720))
     robot_identifier.append(contour)
     if points is not None:
+        print("points", points)
         vec = get_orientation(input_image, points)
     else:
         print("error finding triangle")

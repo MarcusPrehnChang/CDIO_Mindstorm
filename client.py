@@ -186,7 +186,7 @@ def run_calibration_angle(client_socket):
 
 # Run the client
 def run_client():
-    client_socket = startup_sequence("192.168.23.124")
+    client_socket = startup_sequence("192.168.10.209")
     phase_switcher(client_socket)
     # startup_thread = threading.Thread(target=startup_sequence, args=("192.168.23.184",))
     # startup_thread.start()
