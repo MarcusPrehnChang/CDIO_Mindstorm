@@ -93,8 +93,8 @@ def get_distance_to_drive(vector, square_size):
 
 
 def get_angle_to_turn(robot_heading, pointer_vector):
-    print("Robot heading:", robot_heading)
-    print("Pointer vector:", pointer_vector)
+    print("inutted heading:", robot_heading)
+    print("Where im meant to be going:", pointer_vector)
     robot_heading_distance = math.sqrt(robot_heading[0] ** 2 + robot_heading[1] ** 2)
     pointer_vector_distance = math.sqrt(pointer_vector[0] ** 2 + pointer_vector[1] ** 2)
     vector_product = robot_heading[0] * pointer_vector[0] + robot_heading[1] * pointer_vector[1]
@@ -103,7 +103,7 @@ def get_angle_to_turn(robot_heading, pointer_vector):
 
     if robot_heading[0] * pointer_vector[1] - robot_heading[1] * pointer_vector[0] > 0:
         angle_to_turn = -angle_to_turn
-
+    print("angle im giving back:", angle_to_turn)
     return angle_to_turn
 
 

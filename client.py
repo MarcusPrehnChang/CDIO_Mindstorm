@@ -98,18 +98,18 @@ def run_loop_sequence(client_socket):
     message = receive_message(client_socket)
     if message.lower().strip() == "done with info":
         send_message("received", client_socket)
-        distance_to_drive = auto_drive(vector_list, square_size, robot_heading)
+        auto_drive(vector_list, square_size, robot_heading) #Kør til første bold
         send_message("run is done", client_socket)
         continuation_message = receive_message(client_socket)
         if continuation_message == "continue":
-            send_message("received", client_socket)
+            send_message("received", client_socket) #kør til resten
             while run_is_not_done:
                 message = receive_message(client_socket)
                 vector_list = eval(message)
                 send_message("received", client_socket)
                 message = receive_message(client_socket)
                 square_size = int(message)
-                robot_heading = auto_drive(vector_list, square_size, robot_heading)
+                auto_drive(vector_list, square_size, robot_heading)
 
 
                 # Start the listen_for_emergency_stop thread
@@ -203,11 +203,13 @@ def turn_till_precise(vector):
     turn_again = True
     while turn_again:
         new_heading = get_new_robot_heading()
-        print("New heading:", new_heading)
+        print("current heading: ", new_heading)
         angle_to_turn = autodrive.get_angle_to_turn(new_heading, vector)
         if angle_to_turn + - 1:
             turn_again = False
+            break
         else:
+            print("turning : ", angle_to_turn)
             autodrive.turn(angle_to_turn, 75)
 
 
@@ -221,10 +223,9 @@ def navigate_to_ball(vector_list, square_size, robot_heading):
 def auto_drive(list_of_list_of_vectors, square_size, robot_heading):
     for list_of_vectors in list_of_list_of_vectors:
         autodrive.pick_up_ball()
-        distance_to_drive = navigate_to_ball(list_of_vectors, square_size, robot_heading)
+        navigate_to_ball(list_of_vectors, square_size, robot_heading)
         # if stop_flag:
         # break
-    return distance_to_drive
 
 
 # Run the client

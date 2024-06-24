@@ -82,13 +82,13 @@ def new_robot_heading_loop(robot):
         message = receive_message(robot)
         if message.lower().strip() == "get new robot heading":
             robot_heading = str(opencv_camera.get_robot_heading())
-            print("Robot heading: " + robot_heading)
+            print("sending heading back to: " + robot_heading)
             send_message(robot_heading, robot)
             message = receive_message(robot)
-            if message.lower().strip() == "received":
-                continue
-            elif message.lower().strip() == "run is done":
+            if message.lower().strip() == "run is done":
                 in_middle_of_run = False
+                break
+    
     send_message("continue", robot)
     message = receive_message(robot)
 
