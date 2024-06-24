@@ -88,9 +88,6 @@ def new_robot_heading_loop(robot):
             if message.lower().strip() == "run is done":
                 in_middle_of_run = False
                 break
-    
-    send_message("continue", robot)
-    message = receive_message(robot)
 
 
 # send emergency stop message to robot to make it stop

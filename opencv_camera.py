@@ -220,7 +220,7 @@ def find_walls(frame):
 
 def find_triangle(
         frame,
-        area_size=200,
+        area_size=500,
         lower_green=np.array([25, 25, 25]),
         upper_green=np.array([100, 255, 255])
 ):

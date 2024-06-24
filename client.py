@@ -64,7 +64,7 @@ def listen_for_emergency_stop(client_socket):
 def phase_switcher(client_socket):
     received_message = receive_message(client_socket)
     if received_message.lower().strip() == "calibration phase":
-        print("yolo")
+        pass
         # run_calibration(client_socket)
         # run_calibration_angle(client_socket)
     elif received_message.lower().strip() == "robot phase":
@@ -140,6 +140,10 @@ def run_loop_sequence(client_socket):
                     send_message("received", client_socket)
                     # Reset the emergency stop listener
                     stop_flag = False
+
+        else:
+            # here is where it ends, start ending sequence
+            print("Ending of whole run")
 
 
 # Get the robot heading, vector list, and square size
