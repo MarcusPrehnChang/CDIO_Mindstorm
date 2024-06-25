@@ -23,15 +23,12 @@ robot_height = 40
 camera_height = 180
 
 
-
 def calculate_position(points, aspect_ratio):
     triangle = []
     for i in range(len(points)):
         new_point = calculate_offset(points[i][0][0], points[i][0][1], aspect_ratio)
         triangle.append(new_point)
     return np.array(triangle, dtype=np.int32)
-
-
 
 
 def calculate_offset(x,y,aspect_ratio):
