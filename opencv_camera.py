@@ -86,6 +86,10 @@ def find_ball(frame, min_radius=4, max_radius=20):
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     find_highprio(frame)
 
+    cv2.imshow("frame name",frame)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
@@ -103,6 +107,7 @@ def find_ball(frame, min_radius=4, max_radius=20):
             if min_radius < radius < max_radius and isValidColorBall(r, b, g):
                 cv2.circle(frame, center, radius, (0, 255, 255), 2)
                 balls.append(contour)
+
             elif radius > max_radius:
                 cv2.circle(frame, center, radius, (255, 0, 0), 2)
                 gooseEgg.append(contour)
@@ -220,7 +225,7 @@ def find_walls(frame):
 
 def find_triangle(
         frame,
-        area_size=500,
+        area_size=350,
         lower_green=np.array([25, 25, 25]),
         upper_green=np.array([100, 255, 255])
 ):
