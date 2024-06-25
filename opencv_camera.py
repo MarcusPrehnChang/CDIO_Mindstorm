@@ -275,15 +275,17 @@ def find_abc(points):
     length3 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
     print("crash report 3: ", length1, length2, length3)
 
-    # Determine which point is C (the return is in this order A, B, C)
-    if math.isclose(length1, length2, abs_tol=15):
-        return points[0][1], points[0][2], points[0][0]
-    elif math.isclose(length3, length2, abs_tol=15):
-        return points[0][0], points[0][1], points[0][2]
-    elif math.isclose(length1, length3, abs_tol=15):
-        return points[0][0], points[0][2], points[0][1]
-    else:
-        return None, None, None
+    i = 0
+    while True:
+        # Determine which point is C (the return is in this order A, B, C)
+        if math.isclose(length1, length2, abs_tol=(5 + i)):
+            return points[0][1], points[0][2], points[0][0]
+        elif math.isclose(length3, length2, abs_tol=(5 + i)):
+            return points[0][0], points[0][1], points[0][2]
+        elif math.isclose(length1, length3, abs_tol=(5 + i)):
+            return points[0][0], points[0][2], points[0][1]
+        else:
+            i += 1
 
 
 def get_orientation(frame, points):
