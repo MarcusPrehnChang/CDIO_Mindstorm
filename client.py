@@ -8,7 +8,6 @@ from autodrive import set_calibration_variable_angle
 from autodrive import calibration_turn_right
 from autodrive import calibration_turn_left
 
-
 def connect_to_server(hostname):
     # Name and port of the host
     host = hostname

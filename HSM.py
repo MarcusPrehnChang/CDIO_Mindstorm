@@ -6,6 +6,7 @@ from autodrive import calibration_move
 import pathFinder
 import Translator
 import math
+import queue
 
 robot = None
 server_socket = None
@@ -14,6 +15,8 @@ robot_width = None
 triangle_base = None
 triangle_bottom_offset = None
 triangle_top_offset = None
+
+bounding_box = None
 
 class phases(Enum):
     Startup_phase = 1,
@@ -45,7 +48,13 @@ def main():
 def startup():
     global robot
     global server_socket
+    frame = opencv_camera.take_startup_picture()
     robot, server_socket = server.startup_sequence()
+    global bounding_box
+    global cell_height
+    global cell_width
+    cell_width, cell_height, bounding_box = opencv_camera.find_box(frame)
+
 
 
 def calibration_distance(first_frame, second_frame):
@@ -54,8 +63,8 @@ def calibration_distance(first_frame, second_frame):
     first_triangle, first_points, contour = opencv_camera.find_triangle(first_frame)
     new_points = opencv_camera.calculate_position(first_points, (1280, 720))
     temp_list.append(new_points)
-
     a1, b1, first_tip_of_tri = opencv_camera.find_abc(temp_list)
+
     temp_list2 = []
     second_triangle, second_points, contour = opencv_camera.find_triangle(second_frame)
     new_points2 = opencv_camera.calculate_position(second_points, (1280, 720))
@@ -148,16 +157,35 @@ def run_robot():
         square_size = int(square_size)
         iterator = 0
         server.start_of_run_sequence(str(robot_heading), str(vector_list[iterator]), str(square_size), robot)
+        q = queue.Queue
+        iterator = 0
+        for vector in vector_list:
+            q.put(vector)
+        while(q.qsize > 0):
+            current_vector = q.get()
+            server.run_sequence(str(current_vector), str(square_size), robot)
 
-        while iterator != len(vector_list):
-            iterator += 1
-            server.run_sequence(str(vector_list[iterator]), str(square_size), robot)
-            if(iterator != len(vector_list)):
+            if(q.qsize != 0):
                 server.send_message("continue", robot)
+            iterator += 1
+            new_vectors = get_next_vector(vector_list, iterator)
+            if new_vectors != None:
+                q = queue.Queue
+                for vector in new_vectors:
+                    q.put(vector)
+                iterator = 0            
+            
         server.send_message("run is done", robot)
         server.receive_message(robot)
 
 
+def get_next_vector(vectorlist, iterator):
+    frame = opencv_camera.take_picture()
+    vector_list = opencv_camera.remap_objects(frame, bounding_box, cell_width, cell_height)
+    if vector_list[0] != vectorlist[iterator]:
+        return vector_list
+    else:
+        return None
 
 
 

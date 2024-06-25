@@ -21,7 +21,48 @@ cell_width = 0
 robot_height = 40
 camera_height = 180
 
+def take_startup_picture(img_path = None):
+    if img_path == None:
+        print("please take a picture without the robot")
+        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        cv2.waitKey(0)
+        ret, frame = cap.read()
+        return frame
+    else:
+        frame = cv2.resize(cv2.imread("images/" + img_path + ".jpg"), (1280, 720))
+        return frame
 
+def remap_objects(frame, bounding_box, cell_width, cell_height):
+    global balls
+    balls = []
+    global robot_identifier
+    robot_identifier = []
+    global walls
+    walls = []
+
+
+    balls = find_ball(frame)
+    new_frame, points, contour = find_triangle(frame)
+    new_points = calculate_position(points, (1280,720))
+    robot_identifier = new_points
+    find_walls(frame)
+
+    mask = mask_object(bounding_box, 100, balls)
+    mask = mask_object(bounding_box, 75, walls, mask)
+    mask = mask_object(bounding_box, 255, new_points, mask)
+    populate_grid(cell_width, cell_height, mask) #else just run populate grid thrice if this doesnt work.
+
+    grid_translator = GridTranslator(arr) # need new gridtranslator
+    grid_translator.translate()
+    translated_goals, translated_high, translated_start = grid_translator.get_info()
+    object_size = (2, 2)
+    path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
+    vectors = grid_translator.make_list_of_lists(path)
+    vectorList = grid_translator.make_vectors(vectors)
+    longerVectorList = grid_translator.convert_to_longer_strokes(vectorList)
+
+    return longerVectorList
+    
 
 def calculate_position(points, aspect_ratio):
     triangle = []
@@ -29,9 +70,6 @@ def calculate_position(points, aspect_ratio):
         new_point = calculate_offset(points[i][0][0], points[i][0][1], aspect_ratio)
         triangle.append(new_point)
     return np.array(triangle, dtype=np.int32)
-
-
-
 
 def calculate_offset(x,y,aspect_ratio):
     middle_x = aspect_ratio[0]/2
@@ -127,6 +165,14 @@ def robot_builder(robot_size):
 
     return robot_grid_height, robot_grid_width
 
+def mask_object(bounding_box, color, objects, mask = None):
+    x, y, w, h = bounding_box
+    if mask == None:
+        mask = np.zeros((h, w), dtype=np.uint8)
+    for object in objects:
+        cv2.drawContours(mask, [object], -1, color, thickness=cv2.FILLED, offset=(-x,-y))
+    return mask
+
 def map_objects(bounding_box, cell_width, cell_height, output_image, triangle):
     x, y, w, h = bounding_box
     print("cell width: ", cell_width)
@@ -156,10 +202,14 @@ def map_objects(bounding_box, cell_width, cell_height, output_image, triangle):
         end_point = (j * cell_width, h)
         cv2.line(mask, start_point, end_point, (143), 1)
 
-    #cv2.imshow('Shape masked grid', mask)
-    #cv2.imshow('Image given to map_objects', output_image)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows
+    populate_grid(cell_width, cell_height)
+
+    return output_image  # , robot_size
+
+def populate_grid(cell_width, cell_height, mask):
+    cv2.imshow('masked image given to populate', mask)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     for row in range(rows):
         for col in range(columns):
             cell_x_start = col * cell_width
@@ -177,10 +227,7 @@ def map_objects(bounding_box, cell_width, cell_height, output_image, triangle):
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 20):
                 arr[row][col] = 1
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 75):
-                robot_size += 1
                 arr[row][col] = 5
-
-    return output_image  # , robot_size
 
 
 def get_width():
@@ -213,8 +260,7 @@ def find_walls(frame):
     for contour in contours:
         x2, y2, w2, h2 = cv2.boundingRect(contour)
         size = w2 * h2
-        if size > minimum_size and size < highest_size / 2:
-            walls.append(contour)
+        walls.append(contour)
     return cv2.boundingRect(largest_contour)
 
 
