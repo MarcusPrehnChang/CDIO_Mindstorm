@@ -9,6 +9,7 @@ from autodrive import calibration_turn_right
 from autodrive import calibration_turn_left
 
 
+# Simon (s224277) - 10%
 def connect_to_server(hostname):
     # Name and port of the host
     host = hostname
@@ -174,6 +175,7 @@ def run_calibration(client_socket):
             set_calibration_variable_drive(float(calibration_difference))
 
 
+# Simon (s224277) - 100%
 def run_calibration_angle(client_socket):
     send_message("calibrate ready", client_socket)
     message = receive_message(client_socket)

@@ -70,6 +70,7 @@ def calibration_distance(first_frame, second_frame):
     return calibration_difference
 
 
+# Simon (s224277) - 100%
 def calculate_turn(first_frame, second_frame):
     # Find Triangle and Vector for first frame
     temp_list1 = []
@@ -98,6 +99,7 @@ def calculate_turn(first_frame, second_frame):
     return calibration_difference
 
 
+# Simon (s224277) - 100%
 def calibration_turn(f1_left, f2_left, f1_right, f2_right):
     calibration_left = calculate_turn(f1_left, f2_left)
     calibration_right = calculate_turn(f1_right, f2_right)
@@ -122,6 +124,7 @@ def run_robot_calibration():
     server.receive_message(robot)
 
 
+# Simon (s224277) - 100%
 def run_robot_calibration_angle():
     f1_left, f2_left, f1_right, f2_right = server.run_calibration_angle_sequence(robot)
     calibration_left, calibration_right = calibration_turn(f1_left, f2_left, f1_right, f2_right)

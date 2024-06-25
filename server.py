@@ -7,6 +7,7 @@ from opencv_camera import get_info_from_camera as get_inf
 stop_flag = False
 
 
+# Simon (s224277) - 10%
 def run_server():
     # Get hostname and port
     host = "192.168.23.184"
@@ -108,6 +109,7 @@ def run_calibration_sequence(robot):
             return first_frame, second_frame
 
 
+# Simon (s224277) - 100%
 # Task is to take frames for left and right angle with the robot
 def run_calibration_angle_sequence(robot):
     message = receive_message(robot)
