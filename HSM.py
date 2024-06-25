@@ -158,9 +158,6 @@ def run_robot():
         server.receive_message(robot)
 
 
-
-
-
 def emergency_stop():
     print("implement emergency phase")
 

@@ -1,5 +1,6 @@
 import math
 
+import autodrive
 import cv2
 import numpy as np
 
@@ -86,9 +87,9 @@ def find_ball(frame, min_radius=4, max_radius=20):
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     find_highprio(frame)
 
-    cv2.imshow("frame name",frame)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    #cv2.imshow("frame name",frame)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
 
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
@@ -178,7 +179,7 @@ def map_objects(bounding_box, cell_width, cell_height, output_image, triangle):
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 100):
                 arr[row][col] = 2
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 155):
-                arr[row][col] = 3
+                arr[row][col] = 2
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 20):
                 arr[row][col] = 1
             if np.any(mask[cell_y_start:cell_y_end, cell_x_start:cell_x_end] == 75):
@@ -435,7 +436,7 @@ def get_info_from_camera():
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
     vectors = grid_translator.make_list_of_lists(path)
     vectorList = grid_translator.make_vectors(vectors)
-    longerVectorList = grid_translator.convert_to_longer_strokes(vectorList)
+    longerVectorList = grid_translator.convert_to_longer_strokes(vectorList, arr, translated_start)
     return longerVectorList, vec
 
 
@@ -447,16 +448,16 @@ def get_robot_heading():
         new_points = calculate_position(points, (1280, 720))
         temp_list = []
         cv2.imshow("triangle?", newFrame)
-        cv2.waitKey(0)
+        cv2.waitKey(100)
         cv2.destroyAllWindows()
         print("crash report", points)
-        if new_points[0] is not None:
+        if new_points is not None:
             temp_list.append(new_points)
             vec = get_orientation(input_image, temp_list)
             print("Robot heading found", vec)
             return vec
         else:
-            print("error finding triangle")
+            return get_robot_heading()
 
 
 def test():
