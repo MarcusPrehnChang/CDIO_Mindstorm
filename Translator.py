@@ -50,6 +50,7 @@ class GridTranslator:
 
     def make_list_of_lists(self, path):
         goals = self.goals
+        print(path)
         list_of_lists = []
         current_path = []
         prev_path = 0
@@ -108,7 +109,9 @@ class GridTranslator:
                         longerY += vectorList[i][j + 1][1]
                         prev = vectorList[i][j + 1]
                     else:
-                        if (robotPosition[0] <= (xAxisLength * 4.5 / 12) or robotPosition[0] >= (
+                        if robotPosition == [0,0]:
+                            print("00 vector")
+                        elif (robotPosition[0] <= (xAxisLength * 4.5 / 12) or robotPosition[0] >= (
                                 xAxisLength * 7.5 / 12)) and (
                                 robotPosition[1] <= (yAxisLength * 7.5 / 18) or robotPosition[0] >= (
                                 yAxisLength * 10.5 / 12)):

@@ -71,10 +71,33 @@ def a_star(grid, start, goal, object_size):
 
     return None
 
+
+def remove_non_valid_goals(grid, goals):
+    newGoals = []
+    lengthX = len(grid)
+    lengthY = len(grid[0])
+
+    print("before goals")
+
+    #if (x <= rows*(15/rows) or x >= rows*(15/rows)) and (x <= rows*(15/cols) or x >= rows*(15/cols)):
+    for goal in goals:
+        x, y = goal
+        goal = (x,y)
+        print("goal", goal)
+        if (x >= lengthX*(8/lengthX) and x <= lengthX*(52/lengthX)) and (y >= lengthY*(8/lengthY) and y <= lengthY*(82/lengthY)):
+            newGoals.append(goal)
+    print("new goals", newGoals)
+    return newGoals
+
+
 def find_path_to_multiple(grid, start, goals, object_size):
     full_path = []
     current_start = start
-    remaining_goals = set(goals)
+    print(goals)
+    actual_goals = remove_non_valid_goals(grid, goals)
+    remaining_goals = set(actual_goals)
+    print("actual goals", actual_goals)
+    print("remaining goals", remaining_goals)
     index = 0
     while remaining_goals:
         paths = []

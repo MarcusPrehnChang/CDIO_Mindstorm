@@ -434,6 +434,7 @@ def get_info_from_camera():
     translated_goals, translated_high, translated_start = grid_translator.get_info()
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
+    print("path",path)
     vectors = grid_translator.make_list_of_lists(path)
     vectorList = grid_translator.make_vectors(vectors)
     longerVectorList = grid_translator.convert_to_longer_strokes(vectorList, arr, translated_start)
