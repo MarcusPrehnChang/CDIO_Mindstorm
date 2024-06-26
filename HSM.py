@@ -1,10 +1,6 @@
-import numpy as np
 from enum import Enum
 import opencv_camera
 import server
-from autodrive import calibration_move
-import pathFinder
-import Translator
 import math
 
 robot = None
@@ -14,6 +10,7 @@ robot_width = None
 triangle_base = None
 triangle_bottom_offset = None
 triangle_top_offset = None
+
 
 class phases(Enum):
     Startup_phase = 1,
@@ -70,7 +67,6 @@ def calibration_distance(first_frame, second_frame):
     return calibration_difference
 
 
-# Simon (s224277) - 100%
 def calculate_turn(first_frame, second_frame):
     # Find Triangle and Vector for first frame
     temp_list1 = []
@@ -99,7 +95,6 @@ def calculate_turn(first_frame, second_frame):
     return calibration_difference
 
 
-# Simon (s224277) - 100%
 def calibration_turn(f1_left, f2_left, f1_right, f2_right):
     calibration_left = calculate_turn(f1_left, f2_left)
     calibration_right = calculate_turn(f1_right, f2_right)
@@ -124,7 +119,6 @@ def run_robot_calibration():
     server.receive_message(robot)
 
 
-# Simon (s224277) - 100%
 def run_robot_calibration_angle():
     f1_left, f2_left, f1_right, f2_right = server.run_calibration_angle_sequence(robot)
     calibration_left, calibration_right = calibration_turn(f1_left, f2_left, f1_right, f2_right)
@@ -155,7 +149,7 @@ def run_robot():
         while iterator != len(vector_list):
             iterator += 1
             server.run_sequence(str(vector_list[iterator]), str(square_size), robot)
-            if(iterator != len(vector_list)):
+            if (iterator != len(vector_list)):
                 server.send_message("continue", robot)
         server.send_message("run is done", robot)
         server.receive_message(robot)

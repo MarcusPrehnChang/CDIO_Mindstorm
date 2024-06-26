@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class GridTranslator:
     def __init__(self, grid):
         self.grid = grid

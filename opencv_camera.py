@@ -31,9 +31,9 @@ def calculate_position(points, aspect_ratio):
     return np.array(triangle, dtype=np.int32)
 
 
-def calculate_offset(x,y,aspect_ratio):
-    middle_x = aspect_ratio[0]/2
-    middle_y = aspect_ratio[1]/2
+def calculate_offset(x, y, aspect_ratio):
+    middle_x = aspect_ratio[0] / 2
+    middle_y = aspect_ratio[1] / 2
     ratio = (camera_height - robot_height) / camera_height
     pos_x = middle_x - x
     pos_y = middle_y - y
@@ -77,7 +77,6 @@ def find_highprio(frame, min_radius=5, max_radius=20):
                 highprio.append(contour)
 
 
-# Simon (s224277) - 80%
 def find_ball(frame, min_radius=4, max_radius=20):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -109,6 +108,7 @@ def find_ball(frame, min_radius=4, max_radius=20):
 
     return balls, highprio
 
+
 def find_box(frame):
     bounding_box = find_walls(frame)
     x, y, w, h = bounding_box
@@ -126,6 +126,7 @@ def robot_builder(robot_size):
     robot_grid_width = math.ceil((robot_width / triangle_bottom) * robot_size)
 
     return robot_grid_height, robot_grid_width
+
 
 def map_objects(bounding_box, cell_width, cell_height, output_image, triangle):
     x, y, w, h = bounding_box
@@ -147,19 +148,15 @@ def map_objects(bounding_box, cell_width, cell_height, output_image, triangle):
     robot_size = 0
 
     for i in range(rows + 1):
-        start_point = (0, i*cell_height)
-        end_point = (w, i*cell_height)
-        cv2.line(mask, start_point, end_point, (143),1)
+        start_point = (0, i * cell_height)
+        end_point = (w, i * cell_height)
+        cv2.line(mask, start_point, end_point, (143), 1)
 
     for j in range(columns + 1):
         start_point = (j * cell_width, 0)
         end_point = (j * cell_width, h)
         cv2.line(mask, start_point, end_point, (143), 1)
 
-    #cv2.imshow('Shape masked grid', mask)
-    #cv2.imshow('Image given to map_objects', output_image)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows
     for row in range(rows):
         for col in range(columns):
             cell_x_start = col * cell_width
@@ -200,9 +197,6 @@ def find_walls(frame):
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     highest_size = 0
     largest_contour = None
-    #cv2.imshow("masked wall image", mask)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows
 
     for contour in contours:
         x2, y2, w2, h2 = cv2.boundingRect(contour)
@@ -218,7 +212,6 @@ def find_walls(frame):
     return cv2.boundingRect(largest_contour)
 
 
-# Simon (s224277) - 100%
 def find_triangle(
         frame,
         area_size=350,
@@ -254,7 +247,6 @@ def find_triangle(
     return frame, points, contour
 
 
-# Simon (s224277) - 90%
 def find_abc(points):
     # Init the points to x and y
     point_1 = points[0][0]
@@ -262,7 +254,7 @@ def find_abc(points):
     point_2 = points[0][1]
     y2, x2 = point_2
     point_3 = points[0][2]
-    y3, x3= point_3
+    y3, x3 = point_3
 
     # Calculate the distance between points using the Afstandsformlen
     length1 = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
@@ -283,7 +275,6 @@ def find_abc(points):
             i += 1
 
 
-# Simon (s224277) - 90%
 def get_orientation(frame, points):
     # Find A,B and C points
     A, B, C = find_abc(points)
@@ -307,13 +298,11 @@ def get_array():
     return arr
 
 
-# Simon (s224277) - 100%
 def get_pixel_color(image, x, y):
     b, g, r = image[y, x]
     return r, b, g
 
 
-# Simon (s224277) - 100%
 def isValidColorBall(R, G, B):
     return R > 100 and G > 100 and B > 100
 
@@ -324,9 +313,6 @@ def isHighPrioBall(R, G, B):
 
 def isValidColorWall(R, G, B):
     return R < 190 and G > 10 and B > 25
-
-
-# def create_sparse_map(bounding_box_size, balls):
 
 def print_grid(grid):
     for row in grid:
@@ -363,7 +349,7 @@ def get_info_from_camera():
     input_image = cv2.resize(take_picture(), (1280, 720))
 
     newFrame, points, contour = find_triangle(input_image)
-    new_points = calculate_position(points, (1280,720))
+    new_points = calculate_position(points, (1280, 720))
     robot_identifier.append(contour)
     if new_points is not None:
         temp_list.append(new_points)
@@ -381,7 +367,7 @@ def get_info_from_camera():
     translated_goals, translated_high, translated_start = grid_translator.get_info()
     object_size = (2, 2)
     path = find_path_to_multiple(arr, translated_start, translated_goals, object_size)
-    print("path",path)
+    print("path", path)
     vectors = grid_translator.make_list_of_lists(path)
     vectorList = grid_translator.make_vectors(vectors)
     longerVectorList = grid_translator.convert_to_longer_strokes(vectorList, arr, translated_start)
@@ -414,8 +400,8 @@ def test():
     frame = take_picture()
 
     new_frame, points, contour = find_triangle(frame)
-    calculate_position(points, (1280,720))
-    new_points = calculate_position(points, (1280,720))
+    calculate_position(points, (1280, 720))
+    new_points = calculate_position(points, (1280, 720))
     robot_identifier = new_points
     vec = get_orientation(frame, points)
     detect_Objects(frame, robot_identifier)

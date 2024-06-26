@@ -1,7 +1,8 @@
 import heapq
 
+
 class Node:
-    def __init__(self, position, g=0,h=0,parent=None):
+    def __init__(self, position, g=0, h=0, parent=None):
         self.position = position
         self.g = g
         self.h = h
@@ -10,6 +11,7 @@ class Node:
 
     def __lt__(self, other):
         return self.f < other.f
+
 
 def is_valid_position(grid, position, object_size):
     rows, cols = len(grid), len(grid[0])
@@ -20,16 +22,19 @@ def is_valid_position(grid, position, object_size):
                 return False
     return True
 
+
 def get_neighbours(grid, node, object_size):
     neighbours = []
-    for dx, dy in [(-1,0), (1,0), (0,-1),(0,1)]:
+    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
         neighbour_pos = (node.position[0] + dx, node.position[1] + dy)
         if is_valid_position(grid, neighbour_pos, object_size):
             neighbours.append(neighbour_pos)
     return neighbours
 
-def pyth(a,b):
+
+def pyth(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
 
 def a_star(grid, start, goal, object_size):
     open_set = []
@@ -49,13 +54,13 @@ def a_star(grid, start, goal, object_size):
                 current_node = current_node.parent
             path.reverse()
             return path
-        
+
         closed_set.add(current_pos)
 
         for neighbour_pos in get_neighbours(grid, current_node, object_size):
             if neighbour_pos in closed_set:
                 continue
-            
+
             g_score = current_node.g + 1
             neighbour_node = Node(
                 neighbour_pos,
@@ -79,12 +84,12 @@ def remove_non_valid_goals(grid, goals):
 
     print("before goals")
 
-    #if (x <= rows*(15/rows) or x >= rows*(15/rows)) and (x <= rows*(15/cols) or x >= rows*(15/cols)):
     for goal in goals:
         x, y = goal
-        goal = (x,y)
+        goal = (x, y)
         print("goal", goal)
-        if (x >= lengthX*(8/lengthX) and x <= lengthX*(52/lengthX)) and (y >= lengthY*(8/lengthY) and y <= lengthY*(82/lengthY)):
+        if (x >= lengthX * (8 / lengthX) and x <= lengthX * (52 / lengthX)) and (
+                y >= lengthY * (8 / lengthY) and y <= lengthY * (82 / lengthY)):
             newGoals.append(goal)
     print("new goals", newGoals)
     return newGoals
@@ -116,4 +121,3 @@ def find_path_to_multiple(grid, start, goals, object_size):
         index += 1
 
     return full_path
-
