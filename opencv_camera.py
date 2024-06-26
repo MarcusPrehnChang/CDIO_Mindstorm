@@ -85,10 +85,6 @@ def find_ball(frame, min_radius=4, max_radius=20):
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     find_highprio(frame)
 
-    #cv2.imshow("frame name",frame)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
-
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
@@ -229,10 +225,6 @@ def find_triangle(
         lower_green=np.array([25, 25, 25]),
         upper_green=np.array([100, 255, 255])
 ):
-    '''
-    # Modifying the image and removing all other color than green to highlight the shape of the triangle
-    mask = cv2.inRange(frame, lower_green, upper_green)
-    '''
     global robot_identifier, contour
     # Convert to HSV color space
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -244,9 +236,6 @@ def find_triangle(
     kernel = np.ones((5, 5), np.uint8)
     mask = cv2.erode(mask, kernel, iterations=1)
     mask = cv2.dilate(mask, kernel, iterations=1)
-
-    #cv2.imshow("mask", mask)
-    #cv2.waitKey(0)
 
     points = []
 
@@ -296,11 +285,9 @@ def find_abc(points):
 
 # Simon (s224277) - 90%
 def get_orientation(frame, points):
-    print("crash report 2", points)
     # Find A,B and C points
-
     A, B, C = find_abc(points)
-    print(A, B, C)
+
     # Init the points to x and y
     y1, x1 = A
     y2, x2 = B
@@ -311,11 +298,9 @@ def get_orientation(frame, points):
     My = (y2 + y1) / 2
 
     # Calculate the vector (direction the robot is going)
-    # Multiplying with -1 to switch the y coordinate to a normal coordinate system.
+    # Multiplying with -1 to switch the x and y-coordinate to match the coordinate system for mapping.
     V = [float((Mx - x3) * -1), float((My - y3) * -1)]
     return V
-    # except:
-    #    return inc_sen_triangle(frame)
 
 
 def get_array():
